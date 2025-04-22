@@ -21,6 +21,7 @@ library(htmlwidgets)
 library(shiny)
 library(shinyWidgets)
 library(dplyr)
+
 # setwd("~/Documents/GitHub/useful-plants-of-amazonia")
 
 ```
@@ -35,22 +36,26 @@ Column
 
 # load database
 DB <- read.csv("camara_powo_vpa_new_rclverified_website.csv")
-DB <- DB[1:50,]
 
-# download data button, should re-code as static instead of with shiny
-# tags$div(style = "float: left;",
-#          downloadButton("downloadData", "Data"))
-# output$downloadData <- downloadHandler(
-#   filename = function() {
-#     paste("useful-plants-of-amazonia-", Sys.Date(), ".csv", sep = "")
-#   },
-#   content = function(file) {
-#     write.csv(DB(), file, row.names = FALSE)
-#   }
-# )
+# set map view parameters
+initial_lat <- mean(range(as.numeric(DB$glotto_lat), na.rm = TRUE)) # -4.63, at time of testing with v1
+initial_lng <- mean(range(as.numeric(DB$glotto_lon), na.rm = TRUE)) # -57.68
+initial_zm <- 5
+max_lat <- max(as.numeric(DB$glotto_lat), na.rm = TRUE) # 7.51
+min_lat <- min(as.numeric(DB$glotto_lat), na.rm = TRUE) # -16.77
+max_lng <- max(as.numeric(DB$glotto_lon), na.rm = TRUE) # -37.02
+min_lng <- min(as.numeric(DB$glotto_lon), na.rm = TRUE) # -78.34
 
-DBmap <- leaflet() %>%
+DB <- DB[1:50,] # to be removed after testing
+
+# map setup
+DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
   addTiles() %>%  # add default OpenStreetMap map tiles
+  setView(lat = initial_lat, lng = initial_lng, zoom = initial_zm) %>%
+  setMaxBounds(
+    lng1 = min_lng, lat1 = min_lat, # southwest corner
+    lng2 = max_lng,  lat2 = max_lat # northeast corner
+  ) %>%
   addMarkers(lng=as.numeric(DB$glotto_lon), lat=as.numeric(DB$glotto_lat), 
              popup=paste0("<div style='min-width:200px; font-size:13px;'>",
                           "<strong>Reference:</strong> ", DB$reference, "<br>",
@@ -65,12 +70,25 @@ DBmap <- leaflet() %>%
                           "<strong>Indigenous group:</strong> ", ifelse(DB$tribe_resolved != "", DB$tribe_resolved, ""),
                           ifelse(DB$tribe_language != "", paste0(", ", DB$tribe_language), ""), "<br>",
                           "<strong>Use:</strong> ", DB$use_category_resolved, ", ", DB$use_subcategory_resolved,
-                          "</div>"
-                          )) %>%
+                          "</div>")
+             ) %>%
+  addEasyButton(easyButton(
+    icon = "fa-search-plus", title = "Zoom in",
+    onClick = JS("function(btn, map){ map.zoomIn(); }")
+    )
+  ) %>%
+  addEasyButton(easyButton(
+    icon="fa-home", title="Reset view",
+    onClick = JS(sprintf("function(btn, map){ map.setView([%s, %s], %s); }", initial_lat, initial_lng, initial_zm))
+    )
+  ) %>%
+  # addEasyButton(easyButton(
+  #   icon="fa-crosshairs", title="Locate me",
+  #   onClick=JS("function(btn, map){ map.locate({setView: true}); }")
+  #   )
+  # ) %>%
   addEasyButton(
-    easyButton(
-      icon = "fa-download",
-      title = "Download data",
+    easyButton(icon = "fa-download", title = "Download data",
       onClick = JS("
         function(btn, map) {
           var link = document.createElement('a');
@@ -79,43 +97,28 @@ DBmap <- leaflet() %>%
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-        }
-      ")
+        }")
+      )
     )
-  ) %>%
-  onRender("
-  function(el, x) {
-    var map = this;
-    var initCenter = map.getCenter();
-    var initZoom = map.getZoom();
-    L.easyButton('fa-home', function(btn, map){
-      map.setView(initCenter, initZoom);
-    }, 'Reset view').addTo(map);
-  }
-")
-# %>%
-#   addEasyButton(easyButton(
-#     icon="fa-crosshairs", title="Locate me",
-#     onClick=JS("function(btn, map){ map.locate({setView: true}); }")))
 
-DBmap  # Print the map
+# print map
+DBmap
 
 ```
+
 Filter Data {data-navmenu="Database Maps"}
 ===================================== 
-Column
+<!-- {data-orientation=rows}  --> <!-- Row {data-height=100} -->
 -----------------------------------------------------------------------
 ###
 
-```{r interactive map 1}
-
-# load database
-DB <- read.csv("camara_powo_vpa_new_rclverified_website.csv")
-DB <- DB[1:50,]
+```{r interactive map filters}
 
 # UI filters
+# fluidRow(
+#   column(12,
 tags$div(
-  style = "display: flex; gap: 10px; align-items: center; background-color: #f8f9fa; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);",
+  style = "display: flex; gap: 10px; align-items: center; padding: 5px; border-radius: 8px; flex-wrap: wrap;", # background-color: #f8f9fa; box-shadow: 0 1px 3px rgba(0,0,0,0.1)
   div(
     style = "flex: 1;",
     pickerInput("species", "Species",
@@ -125,7 +128,6 @@ tags$div(
                 options = list(
                   `actions-box` = TRUE,
                   `live-search` = TRUE
-                  # , `size` = 5
                   ))),
   div(
     style = "flex: 1;",
@@ -136,7 +138,6 @@ tags$div(
                 options = list(
                   `actions-box` = TRUE,
                   `live-search` = TRUE
-                  # , `size` = 5
                   ))),
   div(
     style = "flex: 1;",
@@ -147,115 +148,79 @@ tags$div(
                 options = list(
                   `actions-box` = TRUE,
                   `live-search` = TRUE
-                  # , `size` = 5
+                  ))),
+  div(
+    style = "flex: 1;",
+    pickerInput("language", "Language",
+                choices = unique(DB$tribe_language),
+                selected = unique(DB$tribe_language),
+                multiple = TRUE,
+                options = list(
+                  `actions-box` = TRUE,
+                  `live-search` = TRUE
                   ))),
   div(
   style = "flex: 0; margin-top: 12px;",
   downloadButton("downloadData", "Data"))
 )
-
-# fluidRow(
-#   column(4,
-#          pickerInput("species", "Species:",
-#             choices = unique(DB$species_resolved),
-#             # selected = unique(DB$species_resolved)[1])
-#             selected = unique(DB$plant_part_resolved),
-#             multiple = TRUE,
-#             options = list(
-#               `actions-box` = TRUE,
-#               `live-search` = TRUE,
-#               `size` = 5
-#               ))
-#   ),
-#   column(3,
-#          pickerInput("part", "Plant part:",
-#             choices = unique(DB$plant_part_resolved),
-#             selected = unique(DB$plant_part_resolved),
-#             multiple = TRUE,
-#             options = list(
-#               `actions-box` = TRUE,
-#               `live-search` = TRUE,
-#               `size` = 5
-#               ))
-#   ),
-#   column(3,
-#          pickerInput("use", "Use:",
-#             choices = unique(DB$use_category_resolved),
-#             selected = unique(DB$use_category_resolved),
-#             multiple = TRUE,
-#             options = list(
-#               `actions-box` = TRUE,
-#               `live-search` = TRUE,
-#               `size` = 5
-#               ))
-#   ),
-#   column(2,
-#          downloadButton("downloadData", "Download Data")
-# )
-# )
-
-# checkboxGroupInput("species", "Species:",
-#                    choices = unique(DB$species_resolved),
-#                    selected = unique(DB$species_resolved))
-#
-# checkboxGroupInput("part", "Plant part:",
-#                    choices = unique(DB$plant_part_resolved),
-#                    selected = unique(DB$plant_part_resolved))
-#
-# checkboxGroupInput("use", "Use:",
-#                    choices = unique(DB$use_category_resolved),
-#                    selected = unique(DB$use_category_resolved))
-
-leafletOutput("mymap", height = 500)
+# ))
 
 ```
 
-```{r interactive map 2}
+<!-- Row {data-height=900} -->
+<!-- ----------------------------------------------------------------------- -->
+<!-- ### -->
+
+```{r interactive map output}
+
+# interactive map output
+# leafletOutput("mymap", height = 500)
+div(
+  style = "width: 100%; height: 650px; position: relative; margin-top: 10px;",
+  leafletOutput("mymap", height = "100%")
+)
 
 # reactive data filtering
-# filtered_data <- reactive({
-#   DB %>% filter(species_resolved == input$species)
-# })
-
 filtered_data <- reactive({
-  # req(input$species, input$part, input$use)
+  # req(input$species, input$part, input$use, input$language)
   DB %>%
     filter(
       species_resolved %in% input$species,
       plant_part_resolved %in% input$part,
-      use_category_resolved %in% input$use
+      use_category_resolved %in% input$use,
+      tribe_language %in% input$language
     )
 })
 
 # initial map render
-# renderLeaflet({
-#   leaflet(filtered_data(), options = leafletOptions(zoomControl = FALSE)) %>%
-#     addTiles() %>%
-#     setView(lng = -62, lat = -3, zoom = 4) %>%
-#     setMaxBounds(
-#       lng1 = -32, lat1 = 11,  # southwest corner
-#       lng2 = -88,  lat2 = -30   # northeast corner
-#     ) %>%
-#     addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat), popup = ~reference)
-# })
-
 output$mymap <- renderLeaflet({
-  leaflet() %>%
+  leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     addTiles() %>%
-    setView(lng = -62, lat = -3, zoom = 4) %>%
+    setView(lat = initial_lat, lng = initial_lng, zoom = initial_zm) %>%
     setMaxBounds(
-      lng1 = -32, lat1 = 11,  # southwest corner
-      lng2 = -88,  lat2 = -30   # northeast corner
+      lng1 = min_lng, lat1 = min_lat, # southwest corner
+      lng2 = max_lng,  lat2 = max_lat # northeast corner
+    ) %>%
+  addEasyButton(easyButton(
+    icon = "fa-search-plus", title = "Zoom in",
+    onClick = JS("function(btn, map){ map.zoomIn(); }")
     )
+  ) %>%
+  addEasyButton(easyButton(
+    icon="fa-home", title="Reset view",
+    onClick = JS(sprintf("function(btn, map){ map.setView([%s, %s], %s); }", initial_lat, initial_lng, initial_zm))
+    )
+  )
 })
 
-# update map with proxy
+# update map markers dynamically
 observe({
   leafletProxy("mymap", data = filtered_data()) %>%
     clearMarkers() %>%
     addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat), popup = ~reference)
 })
 
+# dynamic download button
 output$downloadData <- downloadHandler(
   filename = function() {
     paste("useful-plants-of-amazonia-filtered-", Sys.Date(), ".csv", sep = "")
@@ -269,7 +234,7 @@ output$downloadData <- downloadHandler(
 
 Home
 ===================================== 
-Column {data-width=100 .tabset}
+Column {.tabset}
 -----------------------------------------------------------------------
 ### ABOUT (`r Sys.Date()`)
 
