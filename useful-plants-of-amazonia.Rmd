@@ -1,0 +1,319 @@
+---
+title: "Useful Plants of Amazonia"
+# author: "Nisha Marwaha"
+# date: "`r Sys.Date()`"
+# output: html_document
+output: 
+  flexdashboard::flex_dashboard:
+    vertical_layout: fill
+    theme: default
+    source_code: "https://github.com/nmarwaha/useful-plants-of-amazonia/tree/gh-page"
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(flexdashboard)
+library(leaflet)
+library(leaflet.extras)
+library(htmlwidgets)
+library(shiny)
+library(shinyWidgets)
+library(dplyr)
+# setwd("~/Documents/GitHub/useful-plants-of-amazonia")
+
+```
+
+All Data {data-navmenu="Database Maps"}
+===================================== 
+Column
+-----------------------------------------------------------------------
+###
+
+```{r map}
+
+# load database
+DB <- read.csv("camara_powo_vpa_new_rclverified_website.csv")
+DB <- DB[1:50,]
+
+# download data button, should re-code as static instead of with shiny
+# tags$div(style = "float: left;",
+#          downloadButton("downloadData", "Data"))
+# output$downloadData <- downloadHandler(
+#   filename = function() {
+#     paste("useful-plants-of-amazonia-", Sys.Date(), ".csv", sep = "")
+#   },
+#   content = function(file) {
+#     write.csv(DB(), file, row.names = FALSE)
+#   }
+# )
+
+DBmap <- leaflet() %>%
+  addTiles() %>%  # add default OpenStreetMap map tiles
+  addMarkers(lng=as.numeric(DB$glotto_lon), lat=as.numeric(DB$glotto_lat), 
+             popup=paste0("<div style='min-width:200px; font-size:13px;'>",
+                          "<strong>Reference:</strong> ", DB$reference, "<br>",
+                    "<details style='margin-top:5px;'>", "<summary style='cursor:pointer; color:#007bff;'>See more</summary>",
+                          "<strong>Source:</strong> ", # DB$DOI, 
+                          "<br>",
+                          "<strong>Country:</strong> ", ifelse(DB$country != "", DB$country, ""), "<br>",
+                          "<strong>Species:</strong> <em>", DB$species_resolved, "</em><br>",
+                          "<strong>POWO:</strong> ", # DB$powo_link, 
+                          "<br>",
+                          "<strong>Plant Part:</strong> ", DB$plant_part_resolved, "<br>",
+                          "<strong>Indigenous group:</strong> ", ifelse(DB$tribe_resolved != "", DB$tribe_resolved, ""),
+                          ifelse(DB$tribe_language != "", paste0(", ", DB$tribe_language), ""), "<br>",
+                          "<strong>Use:</strong> ", DB$use_category_resolved, ", ", DB$use_subcategory_resolved,
+                          "</div>"
+                          )) %>%
+  addEasyButton(
+    easyButton(
+      icon = "fa-download",
+      title = "Download data",
+      onClick = JS("
+        function(btn, map) {
+          var link = document.createElement('a');
+          link.href = 'camara_powo_vpa_new_rclverified_website.csv';
+          link.download = 'useful-plants-of-amazonia.csv';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      ")
+    )
+  ) %>%
+  onRender("
+  function(el, x) {
+    var map = this;
+    var initCenter = map.getCenter();
+    var initZoom = map.getZoom();
+    L.easyButton('fa-home', function(btn, map){
+      map.setView(initCenter, initZoom);
+    }, 'Reset view').addTo(map);
+  }
+")
+# %>%
+#   addEasyButton(easyButton(
+#     icon="fa-crosshairs", title="Locate me",
+#     onClick=JS("function(btn, map){ map.locate({setView: true}); }")))
+
+DBmap  # Print the map
+
+```
+Filter Data {data-navmenu="Database Maps"}
+===================================== 
+Column
+-----------------------------------------------------------------------
+###
+
+```{r interactive map 1}
+
+# load database
+DB <- read.csv("camara_powo_vpa_new_rclverified_website.csv")
+DB <- DB[1:50,]
+
+# UI filters
+tags$div(
+  style = "display: flex; gap: 10px; align-items: center; background-color: #f8f9fa; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);",
+  div(
+    style = "flex: 1;",
+    pickerInput("species", "Species",
+                choices = unique(DB$species_resolved),
+                selected = unique(DB$species_resolved),
+                multiple = TRUE,
+                options = list(
+                  `actions-box` = TRUE,
+                  `live-search` = TRUE
+                  # , `size` = 5
+                  ))),
+  div(
+    style = "flex: 1;",
+    pickerInput("part", "Plant part",
+                choices = unique(DB$plant_part_resolved),
+                selected = unique(DB$plant_part_resolved),
+                multiple = TRUE,
+                options = list(
+                  `actions-box` = TRUE,
+                  `live-search` = TRUE
+                  # , `size` = 5
+                  ))),
+  div(
+    style = "flex: 1;",
+    pickerInput("use", "Use",
+                choices = unique(DB$use_category_resolved),
+                selected = unique(DB$use_category_resolved),
+                multiple = TRUE,
+                options = list(
+                  `actions-box` = TRUE,
+                  `live-search` = TRUE
+                  # , `size` = 5
+                  ))),
+  div(
+  style = "flex: 0; margin-top: 12px;",
+  downloadButton("downloadData", "Data"))
+)
+
+# fluidRow(
+#   column(4,
+#          pickerInput("species", "Species:",
+#             choices = unique(DB$species_resolved),
+#             # selected = unique(DB$species_resolved)[1])
+#             selected = unique(DB$plant_part_resolved),
+#             multiple = TRUE,
+#             options = list(
+#               `actions-box` = TRUE,
+#               `live-search` = TRUE,
+#               `size` = 5
+#               ))
+#   ),
+#   column(3,
+#          pickerInput("part", "Plant part:",
+#             choices = unique(DB$plant_part_resolved),
+#             selected = unique(DB$plant_part_resolved),
+#             multiple = TRUE,
+#             options = list(
+#               `actions-box` = TRUE,
+#               `live-search` = TRUE,
+#               `size` = 5
+#               ))
+#   ),
+#   column(3,
+#          pickerInput("use", "Use:",
+#             choices = unique(DB$use_category_resolved),
+#             selected = unique(DB$use_category_resolved),
+#             multiple = TRUE,
+#             options = list(
+#               `actions-box` = TRUE,
+#               `live-search` = TRUE,
+#               `size` = 5
+#               ))
+#   ),
+#   column(2,
+#          downloadButton("downloadData", "Download Data")
+# )
+# )
+
+# checkboxGroupInput("species", "Species:",
+#                    choices = unique(DB$species_resolved),
+#                    selected = unique(DB$species_resolved))
+#
+# checkboxGroupInput("part", "Plant part:",
+#                    choices = unique(DB$plant_part_resolved),
+#                    selected = unique(DB$plant_part_resolved))
+#
+# checkboxGroupInput("use", "Use:",
+#                    choices = unique(DB$use_category_resolved),
+#                    selected = unique(DB$use_category_resolved))
+
+leafletOutput("mymap", height = 500)
+
+```
+
+```{r interactive map 2}
+
+# reactive data filtering
+# filtered_data <- reactive({
+#   DB %>% filter(species_resolved == input$species)
+# })
+
+filtered_data <- reactive({
+  # req(input$species, input$part, input$use)
+  DB %>%
+    filter(
+      species_resolved %in% input$species,
+      plant_part_resolved %in% input$part,
+      use_category_resolved %in% input$use
+    )
+})
+
+# initial map render
+# renderLeaflet({
+#   leaflet(filtered_data(), options = leafletOptions(zoomControl = FALSE)) %>%
+#     addTiles() %>%
+#     setView(lng = -62, lat = -3, zoom = 4) %>%
+#     setMaxBounds(
+#       lng1 = -32, lat1 = 11,  # southwest corner
+#       lng2 = -88,  lat2 = -30   # northeast corner
+#     ) %>%
+#     addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat), popup = ~reference)
+# })
+
+output$mymap <- renderLeaflet({
+  leaflet() %>%
+    addTiles() %>%
+    setView(lng = -62, lat = -3, zoom = 4) %>%
+    setMaxBounds(
+      lng1 = -32, lat1 = 11,  # southwest corner
+      lng2 = -88,  lat2 = -30   # northeast corner
+    )
+})
+
+# update map with proxy
+observe({
+  leafletProxy("mymap", data = filtered_data()) %>%
+    clearMarkers() %>%
+    addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat), popup = ~reference)
+})
+
+output$downloadData <- downloadHandler(
+  filename = function() {
+    paste("useful-plants-of-amazonia-filtered-", Sys.Date(), ".csv", sep = "")
+  },
+  content = function(file) {
+    write.csv(filtered_data(), file, row.names = FALSE)
+  }
+)
+
+```
+
+Home
+===================================== 
+Column {data-width=100 .tabset}
+-----------------------------------------------------------------------
+### ABOUT (`r Sys.Date()`)
+
+The Useful Plants of Amazonia project is developed at Rodrigo Cámara-Leret's lab (https://rcamaraleret.com/), a research group focused on the conservation of biological and cultural heritage. It is supported by a XX grant. This website () was developed by Nisha Marwaha (https://github.com/nmarwaha).
+
+RESOURCES
+
+XX paper citation</br>
+XX database citation</br>
+XX github link
+
+CONTACT INFORMATION
+
+Rodrigo Cámara-Leret
+Department of Systematic and Evolutionary Botany</br>
+University of Zurich</br>
+Zollikerstrasse 107, 8008 Zurich</br>
+Switzerland</br>
+Phone: +41 (0)44 634 84 11</br>
+e-mail: rodrigo.camaraleret@uzh.ch
+
+```{r}
+
+```
+
+### README
+
+ABOUT DATA DOWNLOADS
+
+- You can use this dataset freely and share it with your collaborators.
+
+- The data have been compiled either from the literature or our own fieldwork or that from our collaborators. In some cases we requested data to the authors, while in others data were incorporated from the original publications.
+
+- Useful Plants of Amazonia () is not the author/owner of the data. It is only a way of sharing them with the scientific community. If you decide to use this dataset in your projects, you must mention this web service: "This work has used the Useful Plants of Amazonia database ()". This does not preclude citing the author of individual studies when needed. You will find the references located in the xx file.
+
+- Use this dataset under your own risk. We are not responsible for the accuracy of the results derived from your research.
+
+- If you have any problems downloading the data, please let us know.
+
+HOW TO CONTRIBUTE
+
+- If you have a study that you think could be included in the database, please send us an e-mail, and we'll send you the necessary information. Also we would be happy to know about potential mistakes you spot.
+
+```{r}
+
+```
+
