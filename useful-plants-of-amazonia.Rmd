@@ -8,6 +8,8 @@ output:
     vertical_layout: fill
     theme: default
     source_code: "https://github.com/nmarwaha/useful-plants-of-amazonia/tree/gh-page"
+  # html_document: # not clear what this does
+  #   self_contained: false # not clear what this does
 runtime: shiny
 ---
 
@@ -23,7 +25,6 @@ library(shinyWidgets)
 library(dplyr)
 
 # setwd("~/Documents/GitHub/useful-plants-of-amazonia")
-
 ```
 
 All Data {data-navmenu="Database Maps"}
@@ -32,22 +33,43 @@ Column
 -----------------------------------------------------------------------
 ###
 
-```{r map}
-
+```{r map setup}
 # load database
-DB <- read.csv("camara_powo_vpa_new_rclverified_website.csv")
+DB_raw <- read.csv("camara_powo_vpa_new_rclverified_website.csv", encoding = "UTF-8") # accented characters still not displayed; should add guess_max = Inf for good practice
 
 # set map view parameters
-initial_lat <- mean(range(as.numeric(DB$glotto_lat), na.rm = TRUE)) # -4.63, at time of testing with v1
-initial_lng <- mean(range(as.numeric(DB$glotto_lon), na.rm = TRUE)) # -57.68
+initial_lat <- mean(range(as.numeric(DB_raw$glotto_lat), na.rm = TRUE)) # -4.63, at time of testing with v1
+initial_lng <- mean(range(as.numeric(DB_raw$glotto_lon), na.rm = TRUE)) # -57.68
 initial_zm <- 5
-max_lat <- max(as.numeric(DB$glotto_lat), na.rm = TRUE) # 7.51
-min_lat <- min(as.numeric(DB$glotto_lat), na.rm = TRUE) # -16.77
-max_lng <- max(as.numeric(DB$glotto_lon), na.rm = TRUE) # -37.02
-min_lng <- min(as.numeric(DB$glotto_lon), na.rm = TRUE) # -78.34
+max_lat <- max(as.numeric(DB_raw$glotto_lat), na.rm = TRUE) # 7.51
+min_lat <- min(as.numeric(DB_raw$glotto_lat), na.rm = TRUE) # -16.77
+max_lng <- max(as.numeric(DB_raw$glotto_lon), na.rm = TRUE) # -37.02
+min_lng <- min(as.numeric(DB_raw$glotto_lon), na.rm = TRUE) # -78.34
 
-DB <- DB[1:50,] # to be removed after testing
+# aggregate rows with shared coordinates
+DB <- aggregate(. ~ glotto_lat + glotto_lon, DB_raw, paste, collapse = "; ")
 
+DB <- DB[1:25,] # to be removed after testing
+
+DB_popup <- paste0("<div style='min-width:200px; font-size:13px;'>",
+                   "<strong>Indigenous language(s):</strong> ", ifelse(DB$tribe_language != "", DB$tribe_language, "N/A"), "<br>",
+                    "<details style='margin-top:5px;'>", "<summary style='cursor:pointer; color:#007bff;'>See more</summary>",
+                    # "<strong>Country:</strong> ", ifelse(DB$country != "", DB$country, ""), "<br>",
+                    "<strong>Species:</strong> <em>", DB$species_resolved, "</em><br>",
+                    "<strong>POWO:</strong> ", # DB$powo_link,
+                    "<br>",
+                    "<strong>Plant service(s):</strong> ", DB$Plant_service_resolved, "<br>",
+                    "<strong>Indigenous group:</strong> ", ifelse(DB$tribe_resolved != "", DB$tribe_resolved, "N/A"), "<br>",
+                    # "<strong>Indigenous group / language:</strong> ", ifelse(DB$tribe_resolved != "", DB$tribe_resolved, "N/A"), ifelse(DB$tribe_language != "", paste0(" / ", DB$tribe_language), "N/A"), "<br>",
+                    # "<strong>Use:</strong> ", DB$use_category_resolved, ", ", DB$use_subcategory_resolved,
+                    "<strong>Source(s):</strong> ", # DB$DOI,
+                    "<br>",
+                    "<strong>Reference(s):</strong> ", DB$reference,
+                    # "<br>",
+                    "</div>")
+```
+
+```{r map}
 # map setup
 DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
   addTiles() %>%  # add default OpenStreetMap map tiles
@@ -56,21 +78,8 @@ DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     lng1 = min_lng, lat1 = min_lat, # southwest corner
     lng2 = max_lng,  lat2 = max_lat # northeast corner
   ) %>%
-  addMarkers(lng=as.numeric(DB$glotto_lon), lat=as.numeric(DB$glotto_lat), 
-             popup=paste0("<div style='min-width:200px; font-size:13px;'>",
-                          "<strong>Reference:</strong> ", DB$reference, "<br>",
-                    "<details style='margin-top:5px;'>", "<summary style='cursor:pointer; color:#007bff;'>See more</summary>",
-                          "<strong>Source:</strong> ", # DB$DOI, 
-                          "<br>",
-                          "<strong>Country:</strong> ", ifelse(DB$country != "", DB$country, ""), "<br>",
-                          "<strong>Species:</strong> <em>", DB$species_resolved, "</em><br>",
-                          "<strong>POWO:</strong> ", # DB$powo_link, 
-                          "<br>",
-                          "<strong>Plant Part:</strong> ", DB$plant_part_resolved, "<br>",
-                          "<strong>Indigenous group:</strong> ", ifelse(DB$tribe_resolved != "", DB$tribe_resolved, ""),
-                          ifelse(DB$tribe_language != "", paste0(", ", DB$tribe_language), ""), "<br>",
-                          "<strong>Use:</strong> ", DB$use_category_resolved, ", ", DB$use_subcategory_resolved,
-                          "</div>")
+  addMarkers(lng=as.numeric(DB$glotto_lon), lat=as.numeric(DB$glotto_lat),
+             popup=DB_popup
              ) %>%
   addEasyButton(easyButton(
     icon = "fa-search-plus", title = "Zoom in",
@@ -103,7 +112,6 @@ DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
 
 # print map
 DBmap
-
 ```
 
 Filter Data {data-navmenu="Database Maps"}
@@ -113,6 +121,7 @@ Filter Data {data-navmenu="Database Maps"}
 ###
 
 ```{r interactive map filters}
+DB_raw <- DB_raw[1:50,] # to be removed after testing
 
 # UI filters
 # fluidRow(
@@ -122,18 +131,8 @@ tags$div(
   div(
     style = "flex: 1;",
     pickerInput("species", "Species",
-                choices = unique(DB$species_resolved),
-                selected = unique(DB$species_resolved),
-                multiple = TRUE,
-                options = list(
-                  `actions-box` = TRUE,
-                  `live-search` = TRUE
-                  ))),
-  div(
-    style = "flex: 1;",
-    pickerInput("part", "Plant part",
-                choices = unique(DB$plant_part_resolved),
-                selected = unique(DB$plant_part_resolved),
+                choices = unique(DB_raw$species_resolved),
+                selected = unique(DB_raw$species_resolved),
                 multiple = TRUE,
                 options = list(
                   `actions-box` = TRUE,
@@ -142,8 +141,18 @@ tags$div(
   div(
     style = "flex: 1;",
     pickerInput("use", "Use",
-                choices = unique(DB$use_category_resolved),
-                selected = unique(DB$use_category_resolved),
+                choices = unique(DB_raw$use_category_resolved),
+                selected = unique(DB_raw$use_category_resolved),
+                multiple = TRUE,
+                options = list(
+                  `actions-box` = TRUE,
+                  `live-search` = TRUE
+                  ))),
+  div(
+    style = "flex: 1;",
+    pickerInput("part", "Plant part",
+                choices = unique(DB_raw$plant_part_resolved),
+                selected = unique(DB_raw$plant_part_resolved),
                 multiple = TRUE,
                 options = list(
                   `actions-box` = TRUE,
@@ -152,8 +161,8 @@ tags$div(
   div(
     style = "flex: 1;",
     pickerInput("language", "Language",
-                choices = unique(DB$tribe_language),
-                selected = unique(DB$tribe_language),
+                choices = unique(DB_raw$tribe_language),
+                selected = unique(DB_raw$tribe_language),
                 multiple = TRUE,
                 options = list(
                   `actions-box` = TRUE,
@@ -164,7 +173,6 @@ tags$div(
   downloadButton("downloadData", "Data"))
 )
 # ))
-
 ```
 
 <!-- Row {data-height=900} -->
@@ -172,9 +180,8 @@ tags$div(
 <!-- ### -->
 
 ```{r interactive map output}
-
 # interactive map output
-# leafletOutput("mymap", height = 500)
+# prev leafletOutput("mymap", height = 500)
 div(
   style = "width: 100%; height: 650px; position: relative; margin-top: 10px;",
   leafletOutput("mymap", height = "100%")
@@ -183,11 +190,11 @@ div(
 # reactive data filtering
 filtered_data <- reactive({
   # req(input$species, input$part, input$use, input$language)
-  DB %>%
+  DB_raw %>%
     filter(
       species_resolved %in% input$species,
-      plant_part_resolved %in% input$part,
       use_category_resolved %in% input$use,
+      plant_part_resolved %in% input$part,
       tribe_language %in% input$language
     )
 })
@@ -229,7 +236,6 @@ output$downloadData <- downloadHandler(
     write.csv(filtered_data(), file, row.names = FALSE)
   }
 )
-
 ```
 
 Home
@@ -248,7 +254,7 @@ XX github link
 
 CONTACT INFORMATION
 
-Rodrigo Cámara-Leret
+Rodrigo Cámara-Leret</br>
 Department of Systematic and Evolutionary Botany</br>
 University of Zurich</br>
 Zollikerstrasse 107, 8008 Zurich</br>
