@@ -100,12 +100,16 @@ runtime: shiny
 knitr::opts_chunk$set(echo = FALSE)
 
 library(flexdashboard)
+# library(sf)
+library(purrr)
 library(leaflet)
 library(leaflet.extras)
 library(htmlwidgets)
+library(htmltools)
 library(shiny)
 library(shinyWidgets)
 library(dplyr)
+library(tidyverse)
 
 # setwd("~/Documents/GitHub/useful-plants-of-amazonia")
 ```
@@ -118,38 +122,99 @@ Column
 
 ```{r map setup}
 # load database
-DB_raw <- read.csv("camara_powo_vpa_new_rclverified_website.csv", encoding = "UTF-8") # accented characters still not displayed; should add guess_max = Inf for good practice
+DB_raw <- read.csv("camara_powo_vpa_new_rclverified_website.csv", encoding = "UTF-8") # accented characters not yet displayed, check source file; should add guess_max = Inf for good practice
+DB_raw_languages <- DB_raw[!(is.na(DB_raw$glotto_lat) | DB_raw$glotto_lat=="" | is.na(DB_raw$glotto_lon) | DB_raw$glotto_lon==""), ]
+# amazonia <- read_sf(".shp")
 
 # set map view parameters
-initial_lat <- mean(range(as.numeric(DB_raw$glotto_lat), na.rm = TRUE)) # -4.63, at time of testing with v1
-initial_lng <- mean(range(as.numeric(DB_raw$glotto_lon), na.rm = TRUE)) # -57.68
+initial_lat <- mean(range(as.numeric(DB_raw_languages$glotto_lat), na.rm = TRUE)) # -4.63, at time of testing with v1
+initial_lng <- mean(range(as.numeric(DB_raw_languages$glotto_lon), na.rm = TRUE)) # -57.68
 initial_zm <- 5
-max_lat <- max(as.numeric(DB_raw$glotto_lat), na.rm = TRUE) # 7.51
-min_lat <- min(as.numeric(DB_raw$glotto_lat), na.rm = TRUE) # -16.77
-max_lng <- max(as.numeric(DB_raw$glotto_lon), na.rm = TRUE) # -37.02
-min_lng <- min(as.numeric(DB_raw$glotto_lon), na.rm = TRUE) # -78.34
+max_lat <- max(as.numeric(DB_raw_languages$glotto_lat), na.rm = TRUE) # 7.51
+min_lat <- min(as.numeric(DB_raw_languages$glotto_lat), na.rm = TRUE) # -16.77
+max_lng <- max(as.numeric(DB_raw_languages$glotto_lon), na.rm = TRUE) # -37.02
+min_lng <- min(as.numeric(DB_raw_languages$glotto_lon), na.rm = TRUE) # -78.34
 
 # aggregate rows with shared coordinates
-DB <- aggregate(. ~ glotto_lat + glotto_lon, DB_raw, paste, collapse = "; ")
+DB_grouped <- DB_raw_languages %>%
+  group_by(glotto_lat, glotto_lon) %>%
+  summarise(
+    tribe_lang_grouped = paste(unique(tribe_language), collapse = "; "),
+    reference_grouped = paste("- ", unique(reference), collapse = "<br>"),
+    popup_content = paste0(
+      map_chr(unique(species_resolved), function(sp) {
+        entries <- which(species_resolved == sp)  # for each species at this location
+        sp_df <- data.frame(  # for those entries, group by use and subuse
+          use_category = use_category_resolved[entries],
+          use_subcategory = use_subcategory_resolved[entries],
+          part = plant_part_resolved[entries],
+          stringsAsFactors = FALSE
+        )
+        use_groups <- sp_df %>%
+          group_by(use_category, use_subcategory) %>%
+          summarise(parts = paste(unique(part), collapse = ", "), .groups = "drop")
+        uses_parts <- paste0(
+          purrr::pmap_chr(use_groups, function(use_category, use_subcategory, parts) {
+            paste0(
+              "<b>Use: </b>", use_category, ", ", use_subcategory, "<br><b>Part: </b>", parts
+            )
+          }),
+          collapse = "<br>"
+        )
+        paste0(
+          "<b><i>", sp, "</i></b><br>",  # to only show details after clicking species name use "<details><summary><b><i>", sp, "</i></b></summary>",
+          uses_parts,
+          "<br><br>"  # and "</details><br>"
+        )
+      }),
+      collapse = ""
+    ),
+    .groups = "drop"
+  )
 
-DB <- DB[1:25,] # to be removed after testing
+DB_grouped$popup_content <- paste0(DB_grouped$popup_content,"<br><b>References</b><br>",DB_grouped$reference_grouped)
 
-DB_popup <- paste0("<div style='min-width:200px; font-size:13px;'>",
-                   "<strong>Indigenous language(s):</strong> ", ifelse(DB$tribe_language != "", DB$tribe_language, "N/A"), "<br>",
-                    "<details style='margin-top:5px;'>", "<summary style='cursor:pointer; color:#007bff;'>See more</summary>",
-                    # "<strong>Country:</strong> ", ifelse(DB$country != "", DB$country, ""), "<br>",
-                    "<strong>Species:</strong> <em>", DB$species_resolved, "</em><br>",
-                    "<strong>POWO:</strong> ", # DB$powo_link,
-                    "<br>",
-                    "<strong>Plant service(s):</strong> ", DB$Plant_service_resolved, "<br>",
-                    "<strong>Indigenous group:</strong> ", ifelse(DB$tribe_resolved != "", DB$tribe_resolved, "N/A"), "<br>",
-                    # "<strong>Indigenous group / language:</strong> ", ifelse(DB$tribe_resolved != "", DB$tribe_resolved, "N/A"), ifelse(DB$tribe_language != "", paste0(" / ", DB$tribe_language), "N/A"), "<br>",
-                    # "<strong>Use:</strong> ", DB$use_category_resolved, ", ", DB$use_subcategory_resolved,
-                    "<strong>Source(s):</strong> ", # DB$DOI,
-                    "<br>",
-                    "<strong>Reference(s):</strong> ", DB$reference,
-                    # "<br>",
-                    "</div>")
+DB_grouped <- DB_grouped[1:10,] # to be removed after testing
+
+# set up popup sidebar
+tags$div(
+  id = "popupSidebar",
+  style = "
+    position: fixed;
+    top: 60px; right: 0;
+    width: 30%;
+    height: 90%;
+    overflow-y: auto;
+    background: white;
+    border-left: 1px solid #ccc;
+    padding: 15px;
+    z-index: 1000;
+    display: none;
+  ",
+  tags$button(
+    "×",
+    style = "
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+    ",
+    onclick = "document.getElementById('popupSidebar').style.display='none';"
+  ),
+  tags$div(id = "popupContent", style = "margin-top: 40px;")
+)
+
+tags$script(HTML("
+  function showSidebar(content) {
+    var sidebar = document.getElementById('popupSidebar');
+    var contentDiv = document.getElementById('popupContent');
+    contentDiv.innerHTML = content;
+    sidebar.style.display = 'block';
+  }
+"))
 ```
 
 ```{r map}
@@ -161,8 +226,12 @@ DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     lng1 = min_lng, lat1 = min_lat, # southwest corner
     lng2 = max_lng,  lat2 = max_lat # northeast corner
   ) %>%
-  addMarkers(lng=as.numeric(DB$glotto_lon), lat=as.numeric(DB$glotto_lat),
-             popup=DB_popup
+  # addPolygons(amazonia, color = "#014421", weight = 5, opacity = 0.5, fill = FALSE, smoothFactor = 1) %>%
+  addMarkers(lng=as.numeric(DB_grouped$glotto_lon), lat=as.numeric(DB_grouped$glotto_lat),
+             popup = paste0("<b>Language:</b> ", ifelse(DB_grouped$tribe_lang_grouped != "", DB_grouped$tribe_lang_grouped, "N/A"), "<br>",
+    "<button onclick=\"showSidebar('",
+      gsub("'", "\\\\'", DB_grouped$popup_content),"')\"
+    style='margin-top:5px; background-color:#007bff; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;'>See more</button>")
              ) %>%
   addEasyButton(easyButton(
     icon = "fa-search-plus", title = "Zoom in",
@@ -174,12 +243,7 @@ DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     onClick = JS(sprintf("function(btn, map){ map.setView([%s, %s], %s); }", initial_lat, initial_lng, initial_zm))
     )
   ) %>%
-  # addEasyButton(easyButton(
-  #   icon="fa-crosshairs", title="Locate me",
-  #   onClick=JS("function(btn, map){ map.locate({setView: true}); }")
-  #   )
-  # ) %>%
-  addEasyButton(
+  addEasyButton(  # need to ensure accented characters are properly encoded
     easyButton(icon = "fa-download", title = "Download data",
       onClick = JS("
         function(btn, map) {
@@ -204,9 +268,9 @@ Filter Data {data-navmenu="Database Maps"}
 ###
 
 ```{r interactive map filters}
-DB_raw <- DB_raw[1:50,] # to be removed after testing
+DB_raw_languages <- DB_raw_languages[1:50,] # to be removed after testing
 
-# UI filters
+# UI map filters
 # fluidRow(
 #   column(12,
 tags$div(
@@ -214,8 +278,8 @@ tags$div(
   div(
     style = "flex: 1;",
     pickerInput("species", "Species",
-                choices = unique(DB_raw$species_resolved),
-                selected = unique(DB_raw$species_resolved),
+                choices = unique(DB_raw_languages$species_resolved),
+                selected = unique(DB_raw_languages$species_resolved),
                 multiple = TRUE,
                 options = list(
                   `actions-box` = TRUE,
@@ -224,8 +288,8 @@ tags$div(
   div(
     style = "flex: 1;",
     pickerInput("use", "Use",
-                choices = unique(DB_raw$use_category_resolved),
-                selected = unique(DB_raw$use_category_resolved),
+                choices = unique(DB_raw_languages$use_category_resolved),
+                selected = unique(DB_raw_languages$use_category_resolved),
                 multiple = TRUE,
                 options = list(
                   `actions-box` = TRUE,
@@ -234,8 +298,8 @@ tags$div(
   div(
     style = "flex: 1;",
     pickerInput("part", "Plant part",
-                choices = unique(DB_raw$plant_part_resolved),
-                selected = unique(DB_raw$plant_part_resolved),
+                choices = unique(DB_raw_languages$plant_part_resolved),
+                selected = unique(DB_raw_languages$plant_part_resolved),
                 multiple = TRUE,
                 options = list(
                   `actions-box` = TRUE,
@@ -244,8 +308,8 @@ tags$div(
   div(
     style = "flex: 1;",
     pickerInput("language", "Language",
-                choices = unique(DB_raw$tribe_language),
-                selected = unique(DB_raw$tribe_language),
+                choices = unique(DB_raw_languages$tribe_language),
+                selected = unique(DB_raw_languages$tribe_language),
                 multiple = TRUE,
                 options = list(
                   `actions-box` = TRUE,
@@ -256,6 +320,46 @@ tags$div(
   downloadButton("downloadData", "Data"))
 )
 # ))
+
+# set up popup sidebar - not yet working
+# tags$div(
+#   id = "popupSidebar",
+#   style = "
+#     position: fixed;
+#     top: 60px; right: 0;
+#     width: 30%;
+#     height: 90%;
+#     overflow-y: auto;
+#     background: white;
+#     border-left: 1px solid #ccc;
+#     padding: 15px;
+#     z-index: 1000;
+#     display: none;
+#   ",
+#   tags$button(
+#     "×",
+#     style = "
+#       position: absolute;
+#       top: 5px;
+#       right: 10px;
+#       background: none;
+#       border: none;
+#       font-size: 20px;
+#       cursor: pointer;
+#     ",
+#     onclick = "document.getElementById('popupSidebar').style.display='none';"
+#   ),
+#   tags$div(id = "popupContent", style = "margin-top: 40px;")
+# )
+# 
+# tags$script(HTML("
+#   function showSidebar(content) {
+#     var sidebar = document.getElementById('popupSidebar');
+#     var contentDiv = document.getElementById('popupContent');
+#     contentDiv.innerHTML = content;
+#     sidebar.style.display = 'block';
+#   }
+# "))
 ```
 
 <!-- Row {data-height=900} -->
@@ -273,7 +377,7 @@ div(
 # reactive data filtering
 filtered_data <- reactive({
   # req(input$species, input$part, input$use, input$language)
-  DB_raw %>%
+  DB_raw_languages %>%
     filter(
       species_resolved %in% input$species,
       use_category_resolved %in% input$use,
@@ -287,10 +391,10 @@ output$mymap <- renderLeaflet({
   leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     addTiles() %>%
     setView(lat = initial_lat, lng = initial_lng, zoom = initial_zm) %>%
-    setMaxBounds(
-      lng1 = min_lng, lat1 = min_lat, # southwest corner
-      lng2 = max_lng,  lat2 = max_lat # northeast corner
-    ) %>%
+    # setMaxBounds(
+    #   lng1 = min_lng, lat1 = min_lat, # southwest corner
+    #   lng2 = max_lng,  lat2 = max_lat # northeast corner
+    # ) %>%
   addEasyButton(easyButton(
     icon = "fa-search-plus", title = "Zoom in",
     onClick = JS("function(btn, map){ map.zoomIn(); }")
@@ -307,10 +411,19 @@ output$mymap <- renderLeaflet({
 observe({
   leafletProxy("mymap", data = filtered_data()) %>%
     clearMarkers() %>%
-    addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat), popup = ~reference)
+    addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat), 
+               popup = paste0("<b>Language:</b> ", ifelse(DB_grouped$tribe_lang_grouped != "", DB_grouped$tribe_lang_grouped, "N/A"), "<br>",
+                    "<details style='margin-top:5px;'>", "<summary style='cursor:pointer; color:#007bff;'>See more</summary>",
+                    "<br>", DB_grouped$popup_content)
+      #          popup = paste0("<b>Language:</b> ", ifelse(DB_grouped$tribe_lang_grouped != "", DB_grouped$tribe_lang_grouped, "N/A"), "<br>",
+      # "<button onclick=\"showSidebar('",
+      #   gsub("'", "\\\\'", DB_grouped$popup_content),"')\"
+      # style='margin-top:5px; background-color:#007bff; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;'>See more</button>")
+              )
 })
 
 # dynamic download button
+# need to ensure accented characters are properly encoded
 output$downloadData <- downloadHandler(
   filename = function() {
     paste("useful-plants-of-amazonia-filtered-", Sys.Date(), ".csv", sep = "")
