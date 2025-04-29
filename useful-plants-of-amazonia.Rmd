@@ -176,7 +176,7 @@ DB_grouped <- DB_raw_languages %>%
 DB_grouped$popup_content <- paste0(DB_grouped$popup_content,"<br><b>References</b><br>",DB_grouped$reference_grouped)
 DB_grouped$id <- seq_len(nrow(DB_grouped)) # or use glottocode if better
 
-DB_grouped <- DB_grouped[1:10,] # to be removed after testing
+# DB_grouped <- DB_grouped[1:10,] # to be removed after testing
 ```
 
 ```{r map UI setup}
@@ -286,16 +286,14 @@ DBmap
 
 Filter Data {data-navmenu="Database Maps"}
 ===================================== 
-<!-- {data-orientation=rows}  --> <!-- Row {data-height=100} -->
+Column
 -----------------------------------------------------------------------
 ###
 
-```{r interactive map filters}
-DB_raw_languages <- DB_raw_languages[1:50,] # to be removed after testing
+```{r interactive map UI setup}
+# DB_raw_languages <- DB_raw_languages[1:25,] # to be removed after testing
 
-# UI map filters
-# fluidRow(
-#   column(12,
+# set up map filter boxes
 tags$div(
   style = "display: flex; gap: 10px; align-items: center; padding: 5px; border-radius: 8px; flex-wrap: wrap;", # background-color: #f8f9fa; box-shadow: 0 1px 3px rgba(0,0,0,0.1)
   div(
@@ -339,64 +337,17 @@ tags$div(
                   `live-search` = TRUE
                   ))),
   div(
-  style = "flex: 0; margin-top: 12px;",
-  downloadButton("downloadData", "Data"))
+    style = "flex: 0; margin-top: 12px;",
+    downloadButton("downloadData", "Data")),
+# set up interactive map box
+  div(
+    style = "width: 100%; height: 650px; position: relative; margin-top: 10px;",
+    leafletOutput("mymap", height = "100%")
+    )
 )
-# ))
-
-# set up popup sidebar - not yet working
-# tags$div(
-#   id = "popupSidebar",
-#   style = "
-#     position: fixed;
-#     top: 60px; right: 0;
-#     width: 30%;
-#     height: 90%;
-#     overflow-y: auto;
-#     background: white;
-#     border-left: 1px solid #ccc;
-#     padding: 15px;
-#     z-index: 1000;
-#     display: none;
-#   ",
-#   tags$button(
-#     "×",
-#     style = "
-#       position: absolute;
-#       top: 5px;
-#       right: 10px;
-#       background: none;
-#       border: none;
-#       font-size: 20px;
-#       cursor: pointer;
-#     ",
-#     onclick = "document.getElementById('popupSidebar').style.display='none';"
-#   ),
-#   tags$div(id = "popupContent", style = "margin-top: 40px;")
-# )
-# 
-# tags$script(HTML("
-#   function showSidebar(content) {
-#     var sidebar = document.getElementById('popupSidebar');
-#     var contentDiv = document.getElementById('popupContent');
-#     contentDiv.innerHTML = content;
-#     sidebar.style.display = 'block';
-#   }
-# "))
 ```
 
-<!-- Row {data-height=900} -->
-<!-- ----------------------------------------------------------------------- -->
-<!-- ### -->
-
-```{r interactive map output}
-# interactive map output
-# prev leafletOutput("mymap", height = 500)
-div(
-  style = "width: 100%; height: 650px; position: relative; margin-top: 10px;",
-  leafletOutput("mymap", height = "100%")
-)
-
+```{r interactive map}
 # reactive data filtering
 filtered_data <- reactive({
   # req(input$species, input$part, input$use, input$language)
@@ -435,7 +386,7 @@ output$mymap <- renderLeaflet({
 observe({
   leafletProxy("mymap", data = filtered_data()) %>%
     clearMarkers() %>%
-    addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat), 
+    addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat),
                popup = paste0("<b>Language:</b> ", ifelse(DB_grouped$tribe_lang_grouped != "", DB_grouped$tribe_lang_grouped, "N/A"), "<br>",
                     "<details style='margin-top:5px;'>", "<summary style='cursor:pointer; color:#007bff;'>See more</summary>",
                     "<br>", DB_grouped$popup_content)
@@ -609,4 +560,3 @@ Courriel: rodrigo.camaraleret@uzh.ch
 ```{r}
 
 ```
-
