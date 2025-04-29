@@ -1,5 +1,5 @@
 ---
-title: "Useful Plants of Amazonia"
+title: "Useful Plants of Amazonia 1.0a1"
 # author: "Nisha Marwaha"
 # date: "`r Sys.Date()`"
 # output: html_document
@@ -120,7 +120,7 @@ Column
 -----------------------------------------------------------------------
 ###
 
-```{r map setup}
+```{r map data}
 # load database
 DB_raw <- read.csv("camara_powo_vpa_new_rclverified_website.csv", encoding = "UTF-8") # accented characters not yet displayed, check source file; should add guess_max = Inf for good practice
 DB_raw_languages <- DB_raw[!(is.na(DB_raw$glotto_lat) | DB_raw$glotto_lat=="" | is.na(DB_raw$glotto_lon) | DB_raw$glotto_lon==""), ]
@@ -128,7 +128,7 @@ amazonia <- read_sf('Lim_Biogeografico.shp') %>%
   st_transform('+proj=longlat +datum=WGS84')
 
 # set map view parameters
-initial_lat <- mean(range(as.numeric(DB_raw_languages$glotto_lat), na.rm = TRUE)) # -4.63, at time of testing with v1
+initial_lat <- mean(range(as.numeric(DB_raw_languages$glotto_lat), na.rm = TRUE)) # -4.63, at time of testing with DBv1
 initial_lng <- mean(range(as.numeric(DB_raw_languages$glotto_lon), na.rm = TRUE)) # -57.68
 initial_zm <- 5
 max_lat <- max(as.numeric(DB_raw_languages$glotto_lat), na.rm = TRUE) # 7.51
@@ -143,7 +143,7 @@ DB_grouped <- DB_raw_languages %>%
     tribe_lang_grouped = paste(unique(tribe_language), collapse = "; "),
     reference_grouped = paste("- ", unique(reference), collapse = "<br>"),
     popup_content = paste0(
-      map_chr(unique(species_resolved), function(sp) {
+      map_chr(sort(unique(species_resolved)), function(sp) {
         entries <- which(species_resolved == sp)  # for each species at this location
         sp_df <- data.frame(  # for those entries, group by use and subuse
           use_category = use_category_resolved[entries],
@@ -151,7 +151,7 @@ DB_grouped <- DB_raw_languages %>%
           part = plant_part_resolved[entries],
           stringsAsFactors = FALSE
         )
-        use_groups <- sp_df %>%
+        use_groups <- sp_df %>%  # need to sort alphabetically, would be better to organize subcategories under use categories
           group_by(use_category, use_subcategory) %>%
           summarise(parts = paste(unique(part), collapse = ", "), .groups = "drop")
         uses_parts <- paste0(
@@ -174,9 +174,12 @@ DB_grouped <- DB_raw_languages %>%
   )
 
 DB_grouped$popup_content <- paste0(DB_grouped$popup_content,"<br><b>References</b><br>",DB_grouped$reference_grouped)
+DB_grouped$id <- seq_len(nrow(DB_grouped)) # or use glottocode if better
 
 DB_grouped <- DB_grouped[1:10,] # to be removed after testing
+```
 
+```{r map UI setup}
 # set up popup sidebar
 tags$div(
   id = "popupSidebar",
@@ -184,7 +187,7 @@ tags$div(
     position: fixed;
     top: 60px; right: 0;
     width: 30%;
-    height: 90%;
+    height: 90.85%;
     overflow-y: auto;
     background: white;
     border-left: 1px solid #ccc;
@@ -192,30 +195,47 @@ tags$div(
     z-index: 1000;
     display: none;
   ",
-  tags$button(
-    "×",
+  tags$div(
     style = "
-      position: absolute;
-      top: 5px;
-      right: 10px;
+      position: sticky;
+      top: 0;
       background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
+      padding: 5px 0;
+      z-index: 1001;
     ",
-    onclick = "document.getElementById('popupSidebar').style.display='none';"
-  ),
-  tags$div(id = "popupContent", style = "margin-top: 10px;")
-)
-
+    tags$button(
+      "×",
+      style = "
+        background: white;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        float: right;
+        margin-right: 10px;
+      ",
+      onclick = "document.getElementById('popupSidebar').style.display='none';"
+      )
+    ),
+  tags$div(id = "popupContent", style = "margin-top: 10px;"),
+# store popup content separately
+  tags$div(id = "allPopups", style = "display:none;",
+           lapply(1:nrow(DB_grouped), function(i) {
+             tags$div(
+               id = paste0("popup_", DB_grouped$id[i]),
+               HTML(DB_grouped$popup_content[i])
+               )
+             })
+           )
+,
+# load sidebar content by id
 tags$script(HTML("
-  function showSidebar(content) {
-    var sidebar = document.getElementById('popupSidebar');
-    var contentDiv = document.getElementById('popupContent');
-    contentDiv.innerHTML = content;
-    sidebar.style.display = 'block';
+  function showSidebarById(id) {
+    var content = document.getElementById('popup_' + id).innerHTML;
+    document.getElementById('popupContent').innerHTML = content;
+    document.getElementById('popupSidebar').style.display = 'block';
   }
 "))
+)
 ```
 
 ```{r map}
@@ -227,18 +247,13 @@ DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     lng1 = min_lng, lat1 = min_lat, # southwest corner
     lng2 = max_lng,  lat2 = max_lat # northeast corner
   ) %>%
-  # addRectangles(
-  #   lng1 = min_lng -15, lat1 = min_lat -5, # southwest corner
-  #   lng2 = max_lng +15,  lat2 = max_lat +5, # northeast corner
-  #   weight = 0, fillColor = "#e6e6e6", fillOpacity = 0.8) %>%
   addPolygons(data = st_zm(amazonia), color = "#014421", weight = 5, opacity = 0.5, fill = FALSE, smoothFactor = 1) %>%
   addMarkers(lng=as.numeric(DB_grouped$glotto_lon), lat=as.numeric(DB_grouped$glotto_lat),
              popup = paste0(
                "<b>Language:</b> ", DB_grouped$tribe_lang_grouped, "<br>",
-               "<button onclick=\"showSidebar('",
-               # htmlEscape(DB_grouped$popup_content), # does not solve all popup issues
-               gsub("'", "\\\\'", DB_grouped$popup_content),
-               "')\" style='margin-top:5px; background-color:#007bff; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;'>See more</button>"
+               "<button onclick=\"showSidebarById(",
+               DB_grouped$id, 
+               ")\" style='margin-top:5px; background-color:#007bff; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;'>See more</button>"
                )
              ) %>%
   addEasyButton(easyButton(
