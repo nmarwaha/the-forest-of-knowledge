@@ -1,16 +1,23 @@
 ---
-title: "Useful Plants of Amazonia 1.0a1"
-# author: "Nisha Marwaha"
-# date: "`r Sys.Date()`"
-# output: html_document
-output: 
+title: "Useful Plants of Amazonia v1.0.0-a.1" # version 1.0.0-alpha.1
+output:
   flexdashboard::flex_dashboard:
     vertical_layout: fill
     theme: default
-    source_code: "https://github.com/nmarwaha/useful-plants-of-amazonia/tree/gh-page"
-  # html_document: # not clear what this does
-  #   self_contained: false # not clear what this does
+    source_code: "https://github.com/nmarwaha/useful-plants-of-amazonia"
+  html_document:
+    self_contained: false
 runtime: shiny
+resource_files:
+- Lim_Biogeografico.shx
+- Lim_Biogeografico.shp.xml
+- Lim_Biogeografico.sbx
+- Lim_Biogeografico.sbn
+- Lim_Biogeografico.prj
+- Lim_Biogeografico.lyr
+- Lim_Biogeografico.htm
+- Lim_Biogeografico.dbf
+- Lim_Biogeografico.CPG
 ---
 
 <style>
@@ -266,7 +273,7 @@ DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     onClick = JS(sprintf("function(btn, map){ map.setView([%s, %s], %s); }", initial_lat, initial_lng, initial_zm))
     )
   ) %>%
-  addEasyButton(  # need to ensure accented characters are properly encoded
+  addEasyButton(  # broken; need to ensure accented characters are properly encoded
     easyButton(icon = "fa-download", title = "Download data",
       onClick = JS("
         function(btn, map) {
@@ -417,7 +424,7 @@ The Useful Plants of Amazonia project is developed at Dr. Rodrigo Cámara-Leret'
 
 XX paper citation</br>
 XX database citation</br>
-XX github link</br>
+GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
 
 <b>Data Downloads</b>
 
@@ -457,7 +464,7 @@ El proyecto Plantas Útiles de la Amazonia se desarrolla en el laboratorio del D
 
 XX cita del artículo</br>
 XX cita de la base de datos</br>
-XX enlace de Github</br>
+GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
 
 <b>Descargas de Datos</b>
 
@@ -493,7 +500,7 @@ O projeto Plantas Úteis da Amazônia é desenvolvido no laboratório do Dr. Rod
 
 Citação do artigo XX</br>
 Citação do banco de dados XX</br>
-Link do GitHub XX</br>
+GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
 
 <b>Downloads de Dados</b>
 
@@ -529,7 +536,7 @@ Le projet Plantes utiles d'Amazonie est développé au laboratoire du Dr Rodrigo
 
 XX citation d'article</br>
 XX citation de base de données</br>
-XX lien GitHub</br>
+GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
 
 <b>Téléchargements de Données</b>
 
