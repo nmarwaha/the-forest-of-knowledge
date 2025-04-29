@@ -100,7 +100,7 @@ runtime: shiny
 knitr::opts_chunk$set(echo = FALSE)
 
 library(flexdashboard)
-# library(sf)
+library(sf)
 library(purrr)
 library(leaflet)
 library(leaflet.extras)
@@ -124,7 +124,8 @@ Column
 # load database
 DB_raw <- read.csv("camara_powo_vpa_new_rclverified_website.csv", encoding = "UTF-8") # accented characters not yet displayed, check source file; should add guess_max = Inf for good practice
 DB_raw_languages <- DB_raw[!(is.na(DB_raw$glotto_lat) | DB_raw$glotto_lat=="" | is.na(DB_raw$glotto_lon) | DB_raw$glotto_lon==""), ]
-# amazonia <- read_sf(".shp")
+amazonia <- read_sf('Lim_Biogeografico.shp') %>%
+  st_transform('+proj=longlat +datum=WGS84')
 
 # set map view parameters
 initial_lat <- mean(range(as.numeric(DB_raw_languages$glotto_lat), na.rm = TRUE)) # -4.63, at time of testing with v1
@@ -226,11 +227,16 @@ DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     lng1 = min_lng, lat1 = min_lat, # southwest corner
     lng2 = max_lng,  lat2 = max_lat # northeast corner
   ) %>%
-  # addPolygons(amazonia, color = "#014421", weight = 5, opacity = 0.5, fill = FALSE, smoothFactor = 1) %>%
+  # addRectangles(
+  #   lng1 = min_lng -15, lat1 = min_lat -5, # southwest corner
+  #   lng2 = max_lng +15,  lat2 = max_lat +5, # northeast corner
+  #   weight = 0, fillColor = "#e6e6e6", fillOpacity = 0.8) %>%
+  addPolygons(data = st_zm(amazonia), color = "#014421", weight = 5, opacity = 0.5, fill = FALSE, smoothFactor = 1) %>%
   addMarkers(lng=as.numeric(DB_grouped$glotto_lon), lat=as.numeric(DB_grouped$glotto_lat),
              popup = paste0(
                "<b>Language:</b> ", DB_grouped$tribe_lang_grouped, "<br>",
                "<button onclick=\"showSidebar('",
+               # htmlEscape(DB_grouped$popup_content), # does not solve all popup issues
                gsub("'", "\\\\'", DB_grouped$popup_content),
                "')\" style='margin-top:5px; background-color:#007bff; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;'>See more</button>"
                )
@@ -397,6 +403,7 @@ output$mymap <- renderLeaflet({
     #   lng1 = min_lng, lat1 = min_lat, # southwest corner
     #   lng2 = max_lng,  lat2 = max_lat # northeast corner
     # ) %>%
+  addPolygons(data = st_zm(amazonia), color = "#014421", weight = 5, opacity = 0.5, fill = FALSE, smoothFactor = 1) %>%
   addEasyButton(easyButton(
     icon = "fa-search-plus", title = "Zoom in",
     onClick = JS("function(btn, map){ map.zoomIn(); }")
