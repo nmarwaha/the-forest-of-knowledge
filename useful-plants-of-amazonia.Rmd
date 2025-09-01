@@ -118,7 +118,7 @@ library(shinyWidgets)
 library(dplyr)
 library(tidyverse)
 
-# setwd("~/Documents/GitHub/useful-plants-of-amazonia")
+setwd("~/Documents/GitHub/useful-plants-of-amazonia")
 ```
 
 All Data {data-navmenu="Database Maps"}
@@ -129,7 +129,7 @@ Column
 
 ```{r map data}
 # load database
-DB_raw <- read.csv("camara_powo_vpa_new_rclverified_website.csv", encoding = "UTF-8") # accented characters not yet displayed, check source file; should add guess_max = Inf for good practice
+DB_raw <- read.csv("camara_powo_vpa_new_rclverified_website.csv", encoding = "UTF-8") # accented characters not yet displayed, need updated source file
 DB_raw_languages <- DB_raw[!(is.na(DB_raw$glotto_lat) | DB_raw$glotto_lat=="" | is.na(DB_raw$glotto_lon) | DB_raw$glotto_lon==""), ]
 amazonia <- read_sf('Lim_Biogeografico.shp') %>%
   st_transform('+proj=longlat +datum=WGS84')
@@ -147,40 +147,33 @@ min_lng <- min(as.numeric(DB_raw_languages$glotto_lon), na.rm = TRUE) # -78.34
 DB_grouped <- DB_raw_languages %>%
   group_by(glotto_lat, glotto_lon) %>%
   summarise(
-    tribe_lang_grouped = paste(unique(tribe_language), collapse = "; "),
-    reference_grouped = paste("- ", unique(reference), collapse = "<br>"),
-    popup_content = paste0(
-      map_chr(sort(unique(species_resolved)), function(sp) {
-        entries <- which(species_resolved == sp)  # for each species at this location
-        sp_df <- data.frame(  # for those entries, group by use and subuse
-          use_category = use_category_resolved[entries],
-          use_subcategory = use_subcategory_resolved[entries],
-          part = plant_part_resolved[entries],
-          stringsAsFactors = FALSE
-        )
-        use_groups <- sp_df %>%  # need to sort alphabetically, would be better to organize subcategories under use categories
-          group_by(use_category, use_subcategory) %>%
-          summarise(parts = paste(unique(part), collapse = ", "), .groups = "drop")
-        uses_parts <- paste0(
-          purrr::pmap_chr(use_groups, function(use_category, use_subcategory, parts) {
-            paste0(
-              "<b>Use: </b>", use_category, ", ", use_subcategory, "<br><b>Part: </b>", parts
-            )
-          }),
-          collapse = "<br>"
-        )
-        paste0(
-          "<b><i>", sp, "</i></b><br>",  # to only show details after clicking species name use "<details><summary><b><i>", sp, "</i></b></summary>",
-          uses_parts,
-          "<br><br>"  # and "</details><br>"
-        )
-      }),
-      collapse = ""
-    ),
-    .groups = "drop"
-  )
+    tribe_lang_grouped = paste0(unique(tribe_language), collapse = "; "),
+    reference_grouped = paste0("- ", unique(reference), collapse = "<br>")) 
 
-DB_grouped$popup_content <- paste0(DB_grouped$popup_content,"<br><b>References</b><br>",DB_grouped$reference_grouped)
+DB_grouped2 <- DB_raw_languages %>%
+  group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved, use_subcategory_resolved) %>%
+  summarise(
+    plant_part_grouped = paste0(unique(plant_part_resolved), collapse = ", "))
+
+DB_grouped3 <- DB_grouped2 %>%
+  group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved) %>%
+  mutate(combo = paste0("<b>Subcategory:</b> ",use_subcategory_resolved,"<br><b>Part:</b> ",plant_part_grouped)) %>%
+  summarise(
+    use_subcategory_grouped = paste0(unique(combo), collapse = "<br>"))
+
+DB_grouped4 <- DB_grouped3 %>%
+  group_by(glotto_lat, glotto_lon, species_resolved) %>%
+  mutate(combo = paste0("<b>Use:</b> ",use_category_resolved,"<br>",use_subcategory_grouped)) %>%
+  summarise(
+    use_category_grouped = paste0(unique(combo), collapse = "<br>"))
+
+DB_grouped5 <- DB_grouped4 %>%
+  group_by(glotto_lat, glotto_lon) %>%
+  mutate(combo = paste0("<b><i>",species_resolved,"</i></b><br>",use_category_grouped)) %>%
+  summarise(
+    species_grouped = paste0(unique(combo), collapse = "<br><br>"))
+
+DB_grouped$popup_content <- paste0(DB_grouped5$species_grouped,"<br><br><b>References</b><br>",DB_grouped$reference_grouped)
 DB_grouped$id <- seq_len(nrow(DB_grouped)) # or use glottocode if better
 
 # DB_grouped <- DB_grouped[1:10,] # to be removed after testing
@@ -389,6 +382,7 @@ output$mymap <- renderLeaflet({
   )
 })
 
+# THIS IS THE SLOWDOWN
 # update map markers dynamically
 observe({
   leafletProxy("mymap", data = filtered_data()) %>%
