@@ -261,12 +261,12 @@ DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     onClick = JS("function(btn, map){ map.zoomIn(); }")
     )
   ) %>%
-  addEasyButton(easyButton(
+  addEasyButton(easyButton(  # view distorted when switching between maps
     icon="fa-home", title="Reset view",
     onClick = JS(sprintf("function(btn, map){ map.setView([%s, %s], %s); }", initial_lat, initial_lng, initial_zm))
     )
   ) %>%
-  addEasyButton(  # broken; need to ensure accented characters are properly encoded - TBD if actually broken
+  addEasyButton(  # broken; need to ensure accented characters are properly encoded
     easyButton(icon = "fa-download", title = "Download data",
       onClick = JS("
         function(btn, map) {
@@ -342,8 +342,52 @@ tags$div(
 # set up interactive map box
   div(
     style = "width: 100%; height: 650px; position: relative; margin-top: 10px;",
-    leafletOutput("mymap", height = "100%")
-    )
+    leafletOutput("mymap", height = "100%"))
+)
+
+# set up popup sidebar
+tags$div(
+  id = "popupSidebar_filter",
+  style = "
+    position: fixed;
+    top: 60px; right: 0;
+    width: 30%;
+    height: 90.85%;
+    overflow-y: auto;
+    background: white;
+    border-left: 1px solid #ccc;
+    padding: 15px;
+    z-index: 1000;
+    display: none;
+  ",
+  tags$div(
+    style = "
+      position: sticky;
+      top: 0;
+      background: none;
+      padding: 5px 0;
+      z-index: 1001;
+    ",
+    tags$button(
+      "×",
+      style = "
+        background: white;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        float: right;
+        margin-right: 10px;
+      ",
+      onclick = "document.getElementById('popupSidebar_filter').style.display='none';"
+      )
+    ),
+  tags$div(id = "popupContent_filter", style = "margin-top: 10px;"),
+# load sidebar content by id - how does this work if there is no longer an id?
+tags$script(HTML("
+  function showSidebarFiltered(id) {
+    document.getElementById('popupSidebar_filter').style.display = 'block';
+  }
+"))
 )
 ```
 
@@ -365,10 +409,10 @@ output$mymap <- renderLeaflet({
   leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     addTiles() %>%
     setView(lat = initial_lat, lng = initial_lng, zoom = initial_zm) %>%
-    # setMaxBounds(
-    #   lng1 = min_lng, lat1 = min_lat, # southwest corner
-    #   lng2 = max_lng,  lat2 = max_lat # northeast corner
-    # ) %>%
+    setMaxBounds(
+      lng1 = min_lng, lat1 = min_lat, # southwest corner
+      lng2 = max_lng,  lat2 = max_lat # northeast corner
+    ) %>%
   addPolygons(data = st_zm(amazonia), color = "#014421", weight = 5, opacity = 0.5, fill = FALSE, smoothFactor = 1) %>%
   addEasyButton(easyButton(
     icon = "fa-search-plus", title = "Zoom in",
@@ -419,13 +463,19 @@ observe({
   filtered_data_grouped$popup_content <-
     paste0(filtered_data_grouped5$species_grouped,"<br><br><b>References</b><br>",filtered_data_grouped$reference_grouped)
 
-  leafletProxy("mymap", data = filtered_data_grouped) %>%
+  filtered_data_grouped$popup_content <- gsub("'","&#8217;" , filtered_data_grouped$popup_content)
+  filtered_data_grouped$popup_content <- gsub('"',"&#8217;&#8217;" , filtered_data_grouped$popup_content)
+
+  leafletProxy("mymap", data=filtered_data_grouped) %>%
     addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat),
-               popup = paste0("<b>Language:</b> ", ifelse(filtered_data_grouped$tribe_lang_grouped != "",
-                                                          filtered_data_grouped$tribe_lang_grouped, "N/A"), "<br>",
-                    "<details style='margin-top:5px;'>", "<summary style='cursor:pointer; color:#007bff;'>See more</summary>",
-                    "<br>", filtered_data_grouped$popup_content)
-              )
+               popup = paste0(
+                 "<b>Language:</b> ", ifelse(filtered_data_grouped$tribe_lang_grouped != "",                
+                                             filtered_data_grouped$tribe_lang_grouped, "N/A"), "<br>",
+               "<button onclick=\"showSidebarFiltered(); document.getElementById('popupContent_filter').innerHTML = '",
+               filtered_data_grouped$popup_content,
+               "'\" style='margin-top:5px; background-color:#007bff; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;'>See more</button>"
+               )
+              )  
 })
 
 # dynamic download button
