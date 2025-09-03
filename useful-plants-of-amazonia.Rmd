@@ -266,7 +266,7 @@ DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     onClick = JS(sprintf("function(btn, map){ map.setView([%s, %s], %s); }", initial_lat, initial_lng, initial_zm))
     )
   ) %>%
-  addEasyButton(  # broken; need to ensure accented characters are properly encoded
+  addEasyButton(  # broken; need to ensure accented characters are properly encoded - TBD if actually broken
     easyButton(icon = "fa-download", title = "Download data",
       onClick = JS("
         function(btn, map) {
@@ -382,15 +382,49 @@ output$mymap <- renderLeaflet({
   )
 })
 
-# THIS IS THE SLOWDOWN
 # update map markers dynamically
 observe({
   leafletProxy("mymap", data = filtered_data()) %>%
-    clearMarkers() %>%
+    clearMarkers()
+    
+  filtered_data_grouped <- filtered_data() %>%
+    group_by(glotto_lat, glotto_lon) %>%
+    summarise(
+      tribe_lang_grouped = paste0(unique(tribe_language), collapse = "; "),
+      reference_grouped = paste0("- ", unique(reference), collapse = "<br>"))
+  
+  filtered_data_grouped2 <- filtered_data() %>%
+    group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved, use_subcategory_resolved) %>%
+    summarise(
+      plant_part_grouped = paste0(unique(plant_part_resolved), collapse = ", "))
+  
+  filtered_data_grouped3 <- filtered_data_grouped2 %>%
+    group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved) %>%
+    mutate(combo = paste0("<b>Subcategory:</b> ",use_subcategory_resolved,"<br><b>Part:</b> ",plant_part_grouped)) %>%
+    summarise(
+      use_subcategory_grouped = paste0(unique(combo), collapse = "<br>"))
+  
+  filtered_data_grouped4 <- filtered_data_grouped3 %>%
+    group_by(glotto_lat, glotto_lon, species_resolved) %>%
+    mutate(combo = paste0("<b>Use:</b> ",use_category_resolved,"<br>",use_subcategory_grouped)) %>%
+    summarise(
+      use_category_grouped = paste0(unique(combo), collapse = "<br>"))
+  
+  filtered_data_grouped5 <- filtered_data_grouped4 %>%
+    group_by(glotto_lat, glotto_lon) %>%
+    mutate(combo = paste0("<b><i>",species_resolved,"</i></b><br>",use_category_grouped)) %>%
+    summarise(
+      species_grouped = paste0(unique(combo), collapse = "<br><br>"))
+  
+  filtered_data_grouped$popup_content <-
+    paste0(filtered_data_grouped5$species_grouped,"<br><br><b>References</b><br>",filtered_data_grouped$reference_grouped)
+
+  leafletProxy("mymap", data = filtered_data_grouped) %>%
     addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat),
-               popup = paste0("<b>Language:</b> ", ifelse(DB_grouped$tribe_lang_grouped != "", DB_grouped$tribe_lang_grouped, "N/A"), "<br>",
+               popup = paste0("<b>Language:</b> ", ifelse(filtered_data_grouped$tribe_lang_grouped != "",
+                                                          filtered_data_grouped$tribe_lang_grouped, "N/A"), "<br>",
                     "<details style='margin-top:5px;'>", "<summary style='cursor:pointer; color:#007bff;'>See more</summary>",
-                    "<br>", DB_grouped$popup_content)
+                    "<br>", filtered_data_grouped$popup_content)
               )
 })
 
@@ -410,9 +444,10 @@ Home
 ===================================== 
 Column {.tabset}
 -----------------------------------------------------------------------
-### ABOUT (`r Sys.Date()`)
+### English
+<b>About (`r Sys.Date()`)</b>
 
-The Useful Plants of Amazonia project is developed at Dr. Rodrigo Cámara-Leret's lab (https://rcamaraleret.com/), a research group focused on the conservation of biological and cultural heritage, in collaboration with Dr. Jordi Bascompte and Dr. Patrick R. Roehrdanz. It is supported by grants from the Swiss National Science Foundation, the National Science Foundation, and the Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative. This website () was developed by Nisha Marwaha (https://github.com/nmarwaha).</br></br>
+The Useful Plants of Amazonia project is developed at Dr. Rodrigo Cámara-Leret's lab (https://rcamaraleret.com/), a research group focused on the conservation of biological and cultural heritage, in collaboration with Dr. Jordi Bascompte and Dr. Patrick R. Roehrdanz. It is supported by grants from the Swiss National Science Foundation, the National Science Foundation, and the Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative. This website () was developed by Nisha Marwaha (https://github.com/nmarwaha).</br>
 
 <b>Resources</b>
 
@@ -434,25 +469,33 @@ GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
 
 <b>How To Contribute</b>
 
-- If you have a study that you think could be included in the database, please send us an e-mail. We are also happy to hear about any potential mistakes or other feedback.</br></br>
+- If you have a study that you think could be included in the database, please send us an e-mail. We are also happy to hear about any potential mistakes or other feedback.</br>
 
 <b>Contact Information</b>
 
 Rodrigo Cámara-Leret</br>
 Department of Systematic and Evolutionary Botany</br>
-University of Zurich</br>
-Zollikerstrasse 107, 8008 Zurich</br>
+University of Zürich</br>
+Zollikerstrasse 107, 8008 Zürich</br>
 Switzerland</br>
 Phone: +41 (0)44 634 84 11</br>
 E-mail: rodrigo.camaraleret@uzh.ch
+
+Nisha Marwaha</br>
+Department of Systematic and Evolutionary Botany</br>
+University of Zürich</br>
+Zollikerstrasse 107, 8008 Zürich</br>
+Switzerland</br>
+E-mail: nisha.marwaha@systbot.uzh.ch
 
 ```{r}
 
 ```
 
-### ACERCA DE (`r Sys.Date()`)
+### Español / Castellano
+<b>Acerca De (`r Sys.Date()`)</b>
 
-El proyecto Plantas Útiles de la Amazonia se desarrolla en el laboratorio del Dr. Rodrigo Cámara-Leret (https://rcamaraleret.com/), un grupo de investigación centrado en la conservación del patrimonio biológico y cultural, en colaboración con el Dr. Jordi Bascompte y el Dr. Patrick R. Roehrdanz. Cuenta con el apoyo de becas de la Fundación Nacional Suiza para la Ciencia, la Fundación Nacional para la Ciencia y el Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative. Este sitio web () fue desarrollado por Nisha Marwaha (https://github.com/nmarwaha).</br></br>
+El proyecto Plantas Útiles de la Amazonia se desarrolla en el laboratorio del Dr. Rodrigo Cámara-Leret (https://rcamaraleret.com/), un grupo de investigación centrado en la conservación del patrimonio biológico y cultural, en colaboración con el Dr. Jordi Bascompte y el Dr. Patrick R. Roehrdanz. Cuenta con el apoyo de becas de la Fundación Nacional Suiza para la Ciencia, la Fundación Nacional para la Ciencia y el Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative. Este sitio web () fue desarrollado por Nisha Marwaha (https://github.com/nmarwaha).</br>
 
 <b>Recursos</b>
 
@@ -474,7 +517,7 @@ GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
 
 <b>Cómo Contribuir</b>
 
-- Si tiene un estudio que cree que podría incluirse en la base de datos, envíenos un correo electrónico. Nos complacerá recibir información sobre posibles errores u otros comentarios.</br></br>
+- Si tiene un estudio que cree que podría incluirse en la base de datos, envíenos un correo electrónico. Nos complacerá recibir información sobre posibles errores u otros comentarios.</br>
 
 <b>Información de Contacto</b>
 
@@ -486,9 +529,17 @@ Suiza</br>
 Teléfono: +41 (0)44 634 84 11</br>
 Correo electrónico: rodrigo.camaraleret@uzh.ch
 
-### SOBRE (`r Sys.Date()`)
+Nisha Marwaha</br>
+Departamento de Botánica Sistemática y Evolutiva</br>
+Universidad de Zúrich</br>
+Zollikerstrasse 107, 8008 Zúrich</br>
+Suiza</br>
+Correo electrónico: nisha.marwaha@systbot.uzh.ch
 
-O projeto Plantas Úteis da Amazônia é desenvolvido no laboratório do Dr. Rodrigo Cámara-Leret (https://rcamaraleret.com/), um grupo de pesquisa focado na conservação do patrimônio biológico e cultural, em colaboração com o Dr. Jordi Bascompte e o Dr. Patrick R. Roehrdanz. É apoiado por bolsas da Fundação Nacional de Ciências da Suíça, da Fundação Nacional de Ciências e da Colaboração para Soluções Climáticas Arnhold UC Santa Barbara-Conservation International. Este site () foi desenvolvido por Nisha Marwaha (https://github.com/nmarwaha).</br></br>
+### Português
+<b>Sobre (`r Sys.Date()`)</b>
+
+O projeto Plantas Úteis da Amazônia é desenvolvido no laboratório do Dr. Rodrigo Cámara-Leret (https://rcamaraleret.com/), um grupo de pesquisa focado na conservação do patrimônio biológico e cultural, em colaboração com o Dr. Jordi Bascompte e o Dr. Patrick R. Roehrdanz. É apoiado por bolsas da Fundação Nacional de Ciências da Suíça, da Fundação Nacional de Ciências e da Colaboração para Soluções Climáticas Arnhold UC Santa Barbara-Conservation International. Este site () foi desenvolvido por Nisha Marwaha (https://github.com/nmarwaha).</br>
 
 <b>Recursos</b>
 
@@ -510,7 +561,7 @@ GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
 
 <b>Como Contribuir</b>
 
-- Se você tiver um estudo que acha que poderia ser incluído no banco de dados, envie-nos um e-mail. Também ficaremos felizes em receber notícias sobre possíveis erros ou outros comentários.</br></br>
+- Se você tiver um estudo que acha que poderia ser incluído no banco de dados, envie-nos um e-mail. Também ficaremos felizes em receber notícias sobre possíveis erros ou outros comentários.</br>
 
 <b>Informações de Contato</b>
 
@@ -522,9 +573,17 @@ Suíça</br>
 Telefone: +41 (0)44 634 84 11</br>
 E-mail: rodrigo.camaraleret@uzh.ch
 
-### À PROPOS (`r Sys.Date()`)
+Nisha Marwaha</br>
+Departamento de Botânica Sistemática e Evolutiva</br>
+Universidade de Zurique</br>
+Zollikerstrasse 107, 8008 Zurique</br>
+Suíça</br>
+E-mail: nisha.marwaha@systbot.uzh.ch
 
-Le projet Plantes utiles d'Amazonie est développé au laboratoire du Dr Rodrigo Cámara-Leret (https://rcamaraleret.com/), un groupe de recherche axé sur la conservation du patrimoine biologique et culturel, en collaboration avec les Drs Jordi Bascompte et Patrick R. Roehrdanz. Il est soutenu par des subventions du Fonds national suisse de la recherche scientifique, de la Fondation nationale suisse de la recherche scientifique et du Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative. Ce site web () a été développé par Nisha Marwaha (https://github.com/nmarwaha).</br></br>
+### Français
+<b>À Propos (`r Sys.Date()`)</b>
+
+Le projet Plantes utiles d'Amazonie est développé au laboratoire du Dr Rodrigo Cámara-Leret (https://rcamaraleret.com/), un groupe de recherche axé sur la conservation du patrimoine biologique et culturel, en collaboration avec les Drs Jordi Bascompte et Patrick R. Roehrdanz. Il est soutenu par des subventions du Fonds national suisse de la recherche scientifique, de la Fondation nationale suisse de la recherche scientifique et du Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative. Ce site web () a été développé par Nisha Marwaha (https://github.com/nmarwaha).</br>
 
 <b>Ressources</b>
 
@@ -546,7 +605,7 @@ GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
 
 <b>Comment Contribuer</b>
 
-- Si vous pensez qu'une étude pourrait être incluse dans la base de données, veuillez nous envoyer un courriel. Nous serions également ravis de recevoir d'éventuelles erreurs ou commentaires.</br></br>
+- Si vous pensez qu'une étude pourrait être incluse dans la base de données, veuillez nous envoyer un courriel. Nous serions également ravis de recevoir d'éventuelles erreurs ou commentaires.</br>
 
 <b>Coordonnées</b>
 
@@ -557,6 +616,13 @@ Zollikerstrasse 107, 8008 Zurich</br>
 Suisse</br>
 Téléphone: +41 (0)44 634 84 11</br>
 Courriel: rodrigo.camaraleret@uzh.ch
+
+Nisha Marwaha</br>
+Département de Botanique Systématique et Évolutive</br>
+Université de Zurich</br>
+Zollikerstrasse 107, 8008 Zurich</br>
+Suisse</br>
+Courriel: nisha.marwaha@systbot.uzh.ch
 
 ```{r}
 
