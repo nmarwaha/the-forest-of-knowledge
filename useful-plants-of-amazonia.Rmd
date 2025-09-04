@@ -121,11 +121,11 @@ library(tidyverse)
 setwd("~/Documents/GitHub/useful-plants-of-amazonia")
 ```
 
-All Data {data-navmenu="Database Maps"}
-===================================== 
-Column
------------------------------------------------------------------------
-###
+<!-- All Data {data-navmenu="Database Maps"} -->
+<!-- =====================================  -->
+<!-- Column -->
+<!-- ----------------------------------------------------------------------- -->
+<!-- ### -->
 
 ```{r map data}
 # load database
@@ -143,156 +143,158 @@ min_lat <- min(as.numeric(DB_raw_languages$glotto_lat), na.rm = TRUE) # -16.77
 max_lng <- max(as.numeric(DB_raw_languages$glotto_lon), na.rm = TRUE) # -37.02
 min_lng <- min(as.numeric(DB_raw_languages$glotto_lon), na.rm = TRUE) # -78.34
 
-# aggregate rows with shared coordinates
-DB_grouped <- DB_raw_languages %>%
-  group_by(glotto_lat, glotto_lon) %>%
-  summarise(
-    tribe_lang_grouped = paste0(unique(tribe_language), collapse = "; "),
-    reference_grouped = paste0("- ", unique(reference), collapse = "<br>")) 
-
-DB_grouped2 <- DB_raw_languages %>%
-  group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved, use_subcategory_resolved) %>%
-  summarise(
-    plant_part_grouped = paste0(unique(plant_part_resolved), collapse = ", "))
-
-DB_grouped3 <- DB_grouped2 %>%
-  group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved) %>%
-  mutate(combo = paste0("<b>Subcategory:</b> ",use_subcategory_resolved,"<br><b>Part:</b> ",plant_part_grouped)) %>%
-  summarise(
-    use_subcategory_grouped = paste0(unique(combo), collapse = "<br>"))
-
-DB_grouped4 <- DB_grouped3 %>%
-  group_by(glotto_lat, glotto_lon, species_resolved) %>%
-  mutate(combo = paste0("<b>Use:</b> ",use_category_resolved,"<br>",use_subcategory_grouped)) %>%
-  summarise(
-    use_category_grouped = paste0(unique(combo), collapse = "<br>"))
-
-DB_grouped5 <- DB_grouped4 %>%
-  group_by(glotto_lat, glotto_lon) %>%
-  mutate(combo = paste0("<b><i>",species_resolved,"</i></b><br>",use_category_grouped)) %>%
-  summarise(
-    species_grouped = paste0(unique(combo), collapse = "<br><br>"))
-
-DB_grouped$popup_content <- paste0(DB_grouped5$species_grouped,"<br><br><b>References</b><br>",DB_grouped$reference_grouped)
-DB_grouped$id <- seq_len(nrow(DB_grouped)) # or use glottocode if better
-
-# DB_grouped <- DB_grouped[1:10,] # to be removed after testing
+# # aggregate rows with shared coordinates
+# DB_grouped <- DB_raw_languages %>%
+#   group_by(glotto_lat, glotto_lon) %>%
+#   summarise(
+#     tribe_lang_grouped = paste0(unique(tribe_language), collapse = "; "),
+#     reference_grouped = paste0("- ", unique(reference), collapse = "<br>"))
+# 
+# DB_grouped2 <- DB_raw_languages %>%
+#   group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved, use_subcategory_resolved) %>%
+#   summarise(
+#     plant_part_grouped = paste0(unique(plant_part_resolved), collapse = ", "))
+# 
+# DB_grouped3 <- DB_grouped2 %>%
+#   group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved) %>%
+#   mutate(combo = paste0("<b>Subcategory:</b> ",use_subcategory_resolved,"<br><b>Part:</b> ",plant_part_grouped)) %>%
+#   summarise(
+#     use_subcategory_grouped = paste0(unique(combo), collapse = "<br>"))
+# 
+# DB_grouped4 <- DB_grouped3 %>%
+#   group_by(glotto_lat, glotto_lon, species_resolved) %>%
+#   mutate(combo = paste0("<b>Use:</b> ",use_category_resolved,"<br>",use_subcategory_grouped)) %>%
+#   summarise(
+#     use_category_grouped = paste0(unique(combo), collapse = "<br>"))
+# 
+# DB_grouped5 <- DB_grouped4 %>%
+#   group_by(glotto_lat, glotto_lon) %>%
+#   mutate(combo = paste0("<b><i>",species_resolved,"</i></b><br>",use_category_grouped)) %>%
+#   summarise(
+#     species_grouped = paste0(unique(combo), collapse = "<br><br>"))
+# 
+# DB_grouped$popup_content <- paste0(DB_grouped5$species_grouped,"<br><br><b>References</b><br>",DB_grouped$reference_grouped)
+# DB_grouped$id <- seq_len(nrow(DB_grouped)) # or use glottocode?
 ```
 
-```{r map UI setup}
-# set up popup sidebar
-tags$div(
-  id = "popupSidebar",
-  style = "
-    position: fixed;
-    top: 60px; right: 0;
-    width: 30%;
-    height: 90.85%;
-    overflow-y: auto;
-    background: white;
-    border-left: 1px solid #ccc;
-    padding: 15px;
-    z-index: 1000;
-    display: none;
-  ",
-  tags$div(
-    style = "
-      position: sticky;
-      top: 0;
-      background: none;
-      padding: 5px 0;
-      z-index: 1001;
-    ",
-    tags$button(
-      "×",
-      style = "
-        background: white;
-        border: none;
-        font-size: 20px;
-        cursor: pointer;
-        float: right;
-        margin-right: 10px;
-      ",
-      onclick = "document.getElementById('popupSidebar').style.display='none';"
-      )
-    ),
-  tags$div(id = "popupContent", style = "margin-top: 10px;"),
-# store popup content separately
-  tags$div(id = "allPopups", style = "display:none;",
-           lapply(1:nrow(DB_grouped), function(i) {
-             tags$div(
-               id = paste0("popup_", DB_grouped$id[i]),
-               HTML(DB_grouped$popup_content[i])
-               )
-             })
-           )
-,
-# load sidebar content by id
-tags$script(HTML("
-  function showSidebarById(id) {
-    var content = document.getElementById('popup_' + id).innerHTML;
-    document.getElementById('popupContent').innerHTML = content;
-    document.getElementById('popupSidebar').style.display = 'block';
-  }
-"))
-)
-```
+<!-- ```{r map UI setup} -->
+<!-- # set up popup sidebar -->
+<!-- tags$div( -->
+<!--   id = "popupSidebar", -->
+<!--   style = " -->
+<!--     position: fixed; -->
+<!--     top: 60px; right: 0; -->
+<!--     width: 30%; -->
+<!--     height: 90.85%; -->
+<!--     overflow-y: auto; -->
+<!--     background: white; -->
+<!--     border-left: 1px solid #ccc; -->
+<!--     padding: 15px; -->
+<!--     z-index: 1000; -->
+<!--     display: none; -->
+<!--   ", -->
+<!--   tags$div( -->
+<!--     style = " -->
+<!--       position: sticky; -->
+<!--       top: 0; -->
+<!--       background: none; -->
+<!--       padding: 5px 0; -->
+<!--       z-index: 1001; -->
+<!--     ", -->
+<!--     tags$button( -->
+<!--       "×", -->
+<!--       style = " -->
+<!--         background: white; -->
+<!--         border: none; -->
+<!--         font-size: 20px; -->
+<!--         cursor: pointer; -->
+<!--         float: right; -->
+<!--         margin-right: 10px; -->
+<!--       ", -->
+<!--       onclick = "document.getElementById('popupSidebar').style.display='none';" -->
+<!--       ) -->
+<!--     ), -->
+<!--   tags$div(id = "popupContent", style = "margin-top: 10px;"), -->
+<!-- # store popup content separately -->
+<!--   tags$div(id = "allPopups", style = "display:none;", -->
+<!--            lapply(1:nrow(DB_grouped), function(i) { -->
+<!--              tags$div( -->
+<!--                id = paste0("popup_", DB_grouped$id[i]), -->
+<!--                HTML(DB_grouped$popup_content[i]) -->
+<!--                ) -->
+<!--              }) -->
+<!--            ) -->
+<!-- , -->
+<!-- # load sidebar content by id -->
+<!-- tags$script(HTML(" -->
+<!--   function showSidebarById(id) { -->
+<!--     var content = document.getElementById('popup_' + id).innerHTML; -->
+<!--     document.getElementById('popupContent').innerHTML = content; -->
+<!--     document.getElementById('popupSidebar').style.display = 'block'; -->
+<!--   } -->
+<!-- ")) -->
+<!-- ) -->
+<!-- ``` -->
 
-```{r map}
-# map setup
-DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-  addTiles() %>%  # add default OpenStreetMap map tiles
-  setView(lat = initial_lat, lng = initial_lng, zoom = initial_zm) %>%
-  setMaxBounds(
-    lng1 = min_lng, lat1 = min_lat, # southwest corner
-    lng2 = max_lng,  lat2 = max_lat # northeast corner
-  ) %>%
-  addPolygons(data = st_zm(amazonia), color = "#014421", weight = 5, opacity = 0.5, fill = FALSE, smoothFactor = 1) %>%
-  addMarkers(lng=as.numeric(DB_grouped$glotto_lon), lat=as.numeric(DB_grouped$glotto_lat),
-             popup = paste0(
-               "<b>Language:</b> ", DB_grouped$tribe_lang_grouped, "<br>",
-               "<button onclick=\"showSidebarById(",
-               DB_grouped$id, 
-               ")\" style='margin-top:5px; background-color:#007bff; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;'>See more</button>"
-               )
-             ) %>%
-  addEasyButton(easyButton(
-    icon = "fa-search-plus", title = "Zoom in",
-    onClick = JS("function(btn, map){ map.zoomIn(); }")
-    )
-  ) %>%
-  addEasyButton(easyButton(  # view distorted when switching between maps
-    icon="fa-home", title="Reset view",
-    onClick = JS(sprintf("function(btn, map){ map.setView([%s, %s], %s); }", initial_lat, initial_lng, initial_zm))
-    )
-  ) %>%
-  addEasyButton(  # broken; need to ensure accented characters are properly encoded
-    easyButton(icon = "fa-download", title = "Download data",
-      onClick = JS("
-        function(btn, map) {
-          var link = document.createElement('a');
-          link.href = 'camara_powo_vpa_new_rclverified_website.csv';
-          link.download = 'useful-plants-of-amazonia.csv';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }")
-      )
-    )
+<!-- ```{r map} -->
+<!-- # map setup -->
+<!-- DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>% -->
+<!--   addTiles() %>%  # add default OpenStreetMap map tiles -->
+<!--   setView(lat = initial_lat, lng = initial_lng, zoom = initial_zm) %>% -->
+<!--   setMaxBounds( -->
+<!--     lng1 = min_lng, lat1 = min_lat, # southwest corner -->
+<!--     lng2 = max_lng,  lat2 = max_lat # northeast corner -->
+<!--   ) %>% -->
+<!--   addPolygons(data = st_zm(amazonia), color = "#014421", weight = 5, opacity = 0.5, fill = FALSE, smoothFactor = 1) %>% -->
+<!--   addMarkers(lng=as.numeric(DB_grouped$glotto_lon), lat=as.numeric(DB_grouped$glotto_lat), -->
+<!--              popup = paste0( -->
+<!--                "<b>Language:</b> ", DB_grouped$tribe_lang_grouped, "<br>", -->
+<!--                "<button onclick=\"showSidebarById(", -->
+<!--                DB_grouped$id,  -->
+<!--                ")\" style='margin-top:5px; background-color:#007bff; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;'>See more</button>" -->
+<!--                ) -->
+<!--              ) %>% -->
+<!--   addEasyButton(easyButton( -->
+<!--     icon = "fa-search-plus", title = "Zoom in", -->
+<!--     onClick = JS("function(btn, map){ map.zoomIn(); }") -->
+<!--     ) -->
+<!--   ) %>% -->
+<!--   addEasyButton(easyButton(  # view distorted when switching between maps -->
+<!--     icon="fa-home", title="Reset view", -->
+<!--     onClick = JS(sprintf("function(btn, map){ map.setView([%s, %s], %s); }", initial_lat, initial_lng, initial_zm)) -->
+<!--     ) -->
+<!--   ) %>% -->
+<!--   # addEasyButton(  # need to ensure accented characters are properly encoded -->
+<!--   #   easyButton(icon = "fa-download", title = "Download data", -->
+<!--   #   onClick = JS("function(btn, map){ $('#downloadData').click(); }") -->
+<!--   #   ) -->
+<!--   # ) -->
+<!--   addEasyButton(  # broken; need to ensure accented characters are properly encoded -->
+<!--     easyButton(icon = "fa-download", title = "Download data", -->
+<!--       onClick = JS(" -->
+<!--         function(btn, map) { -->
+<!--           var link = document.createElement('a'); -->
+<!--           link.href = 'camara_powo_vpa_new_rclverified_website.csv'; -->
+<!--           link.download = 'useful-plants-of-amazonia.csv'; -->
+<!--           document.body.appendChild(link); -->
+<!--           link.click(); -->
+<!--           document.body.removeChild(link); -->
+<!--         }") -->
+<!--       ) -->
+<!--     ) -->
 
-# print map
-DBmap
-```
+<!-- # print map -->
+<!-- DBmap -->
+<!-- ``` -->
 
-Filter Data {data-navmenu="Database Maps"}
+<!-- Filter Data {data-navmenu="Database Maps"} -->
+Map
 ===================================== 
 Column
 -----------------------------------------------------------------------
 ###
 
 ```{r interactive map UI setup}
-# DB_raw_languages <- DB_raw_languages[1:25,] # to be removed after testing
-
 # set up map filter boxes
 tags$div(
   style = "display: flex; gap: 10px; align-items: center; padding: 5px; border-radius: 8px; flex-wrap: wrap;", # background-color: #f8f9fa; box-shadow: 0 1px 3px rgba(0,0,0,0.1)
