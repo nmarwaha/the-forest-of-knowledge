@@ -1,10 +1,10 @@
 ---
-title: "Useful Plants of Amazonia v1.0.0-a.2" # version 1.0.0-alpha.2
+title: "The Knowing Forest v1.0.0-a.2" # version 1.0.0-alpha.2
 output:
   flexdashboard::flex_dashboard:
     vertical_layout: fill
     theme: default
-    source_code: "https://github.com/nmarwaha/useful-plants-of-amazonia"
+    source_code: "https://github.com/nmarwaha/the-knowing-forest"
   html_document:
     self_contained: false
 runtime: shiny
@@ -118,7 +118,7 @@ library(shinyWidgets)
 library(dplyr)
 library(tidyverse)
 
-setwd("~/Documents/GitHub/useful-plants-of-amazonia")
+setwd("~/Documents/GitHub/the-knowing-forest")
 ```
 
 Map
@@ -310,7 +310,7 @@ observe({
 # dynamic download button - need to ensure accented characters are properly encoded
 output$downloadData <- downloadHandler(
   filename = function() {
-    paste("useful-plants-of-amazonia-filtered-", Sys.Date(), ".csv", sep = "")
+    paste("the-knowing-forest-database-filtered-", Sys.Date(), ".csv", sep = "")
   },
   content = function(file) {
     write.csv(filtered_data(), file, row.names = FALSE)
@@ -328,13 +328,13 @@ Column {.tabset}
 ### English
 <b>About (`r Sys.Date()`)</b>
 
-The Useful Plants of Amazonia project is developed at Dr. Rodrigo Cámara-Leret's lab (https://rcamaraleret.com/), a research group focused on the conservation of biological and cultural heritage, in collaboration with Dr. Jordi Bascompte and Dr. Patrick R. Roehrdanz. It is supported by grants from the Swiss National Science Foundation, the National Science Foundation, and the Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative. This website () was developed by Nisha Marwaha (https://github.com/nmarwaha).</br>
+The Knowing Forest project is developed at Dr. Rodrigo Cámara-Leret's lab (https://rcamaraleret.com/), a research group focused on the conservation of biological and cultural heritage, in collaboration with Dr. Jordi Bascompte and Dr. Patrick R. Roehrdanz. It is supported by grants from the Swiss National Science Foundation, the National Science Foundation, and the Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative. This website () was developed by Nisha Marwaha (https://github.com/nmarwaha).</br>
 
 <b>Resources</b>
 
 XX paper citation</br>
 XX database citation</br>
-GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
+GitHub: https://github.com/nmarwaha/the-knowing-forest</br>
 
 <b>Data Downloads</b>
 
@@ -342,7 +342,7 @@ GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
 
 - The data have been compiled either from the literature or fieldwork done by us or our collaborators. Data was incorporated from the original publications, unless it was requested from the original authors.
 
-- Useful Plants of Amazonia () is not the author/owner of the data. It is only a way of sharing them with the community. If you decide to use this dataset, you must mention this web service: "This work used the Useful Plants of Amazonia database ()." This does not preclude citing the author of individual studies when needed. All references are located in the dataset file.
+- The Knowing Forest () is not the author/owner of the data. It is only a way of sharing them with the community. If you decide to use this dataset, you must mention this web service: "This work used The Knowing Forest database ()." This does not preclude citing the author of individual studies when needed. All references are located in the dataset file.
 
 - Use this dataset at your own risk. We are not responsible for the accuracy of the results derived from your research.
 
@@ -376,13 +376,13 @@ E-mail: nisha.marwaha@systbot.uzh.ch
 ### Español / Castellano
 <b>Acerca De (`r Sys.Date()`)</b>
 
-El proyecto Plantas Útiles de la Amazonia se desarrolla en el laboratorio del Dr. Rodrigo Cámara-Leret (https://rcamaraleret.com/), un grupo de investigación centrado en la conservación del patrimonio biológico y cultural, en colaboración con el Dr. Jordi Bascompte y el Dr. Patrick R. Roehrdanz. Cuenta con el apoyo de becas de la Fundación Nacional Suiza para la Ciencia, la Fundación Nacional para la Ciencia y el Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative. Este sitio web () fue desarrollado por Nisha Marwaha (https://github.com/nmarwaha).</br>
+El proyecto The Knowing Forest se desarrolla en el laboratorio del Dr. Rodrigo Cámara-Leret (https://rcamaraleret.com/), un grupo de investigación centrado en la conservación del patrimonio biológico y cultural, en colaboración con el Dr. Jordi Bascompte y el Dr. Patrick R. Roehrdanz. Cuenta con el apoyo de becas de la Fundación Nacional Suiza para la Ciencia, la Fundación Nacional para la Ciencia y el Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative. Este sitio web () fue desarrollado por Nisha Marwaha (https://github.com/nmarwaha).</br>
 
 <b>Recursos</b>
 
 XX cita del artículo</br>
 XX cita de la base de datos</br>
-GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
+GitHub: https://github.com/nmarwaha/the-knowing-forest</br>
 
 <b>Descargas de Datos</b>
 
@@ -390,7 +390,7 @@ GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
 
 - Los datos se han recopilado a partir de la literatura o del trabajo de campo realizado por nosotros o nuestros colaboradores. Los datos se incorporaron de las publicaciones originales, a menos que se solicitara a los autores originales.
 
-- Plantas Útiles de la Amazonia () no es el autor ni el propietario de los datos. Es solo una forma de compartirlos con la comunidad. Si decide utilizar este conjunto de datos, debe mencionar este servicio web: "Este trabajo utilizó la base de datos Plantas Útiles de la Amazonia ()." Esto no impide citar al autor de estudios individuales cuando sea necesario. Todas las referencias se encuentran en el archivo del conjunto de datos.
+- The Knowing Forest () no es el autor ni el propietario de los datos. Es solo una forma de compartirlos con la comunidad. Si decide utilizar este conjunto de datos, debe mencionar este servicio web: "Este trabajo utilizó la base de datos The Knowing Forest ()." Esto no impide citar al autor de estudios individuales cuando sea necesario. Todas las referencias se encuentran en el archivo del conjunto de datos.
 
 - Utilice este conjunto de datos bajo su propia responsabilidad. No nos responsabilizamos de la exactitud de los resultados derivados de su investigación.
 
@@ -420,13 +420,13 @@ Correo electrónico: nisha.marwaha@systbot.uzh.ch
 ### Português
 <b>Sobre (`r Sys.Date()`)</b>
 
-O projeto Plantas Úteis da Amazônia é desenvolvido no laboratório do Dr. Rodrigo Cámara-Leret (https://rcamaraleret.com/), um grupo de pesquisa focado na conservação do patrimônio biológico e cultural, em colaboração com o Dr. Jordi Bascompte e o Dr. Patrick R. Roehrdanz. É apoiado por bolsas da Fundação Nacional de Ciências da Suíça, da Fundação Nacional de Ciências e da Colaboração para Soluções Climáticas Arnhold UC Santa Barbara-Conservation International. Este site () foi desenvolvido por Nisha Marwaha (https://github.com/nmarwaha).</br>
+O projeto The Knowing Forest é desenvolvido no laboratório do Dr. Rodrigo Cámara-Leret (https://rcamaraleret.com/), um grupo de pesquisa focado na conservação do patrimônio biológico e cultural, em colaboração com o Dr. Jordi Bascompte e o Dr. Patrick R. Roehrdanz. É apoiado por bolsas da Fundação Nacional de Ciências da Suíça, da Fundação Nacional de Ciências e da Colaboração para Soluções Climáticas Arnhold UC Santa Barbara-Conservation International. Este site () foi desenvolvido por Nisha Marwaha (https://github.com/nmarwaha).</br>
 
 <b>Recursos</b>
 
 Citação do artigo XX</br>
 Citação do banco de dados XX</br>
-GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
+GitHub: https://github.com/nmarwaha/the-knowing-forest</br>
 
 <b>Downloads de Dados</b>
 
@@ -434,7 +434,7 @@ GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
 
 - Os dados foram compilados a partir da literatura ou de trabalho de campo realizado por nós ou por nossos colaboradores. Os dados foram incorporados das publicações originais, a menos que solicitados aos autores originais.
 
-- Plantas Úteis da Amazônia () não é o autor/proprietário dos dados. É apenas uma forma de compartilhá-los com a comunidade. Se você decidir usar este conjunto de dados, deverá mencionar este serviço web: "Este trabalho utilizou o banco de dados Plantas Úteis da Amazônia ()." Isso não impede a citação do autor de estudos individuais, quando necessário. Todas as referências estão localizadas no arquivo do conjunto de dados.
+- The Knowing Forest () não é o autor/proprietário dos dados. É apenas uma forma de compartilhá-los com a comunidade. Se você decidir usar este conjunto de dados, deverá mencionar este serviço web: "Este trabalho utilizou o banco de dados The Knowing Forest ()." Isso não impede a citação do autor de estudos individuais, quando necessário. Todas as referências estão localizadas no arquivo do conjunto de dados.
 
 - Use este conjunto de dados por sua conta e risco. Não nos responsabilizamos pela precisão dos resultados derivados de sua pesquisa.
 
@@ -464,13 +464,13 @@ E-mail: nisha.marwaha@systbot.uzh.ch
 ### Français
 <b>À Propos (`r Sys.Date()`)</b>
 
-Le projet Plantes utiles d'Amazonie est développé au laboratoire du Dr Rodrigo Cámara-Leret (https://rcamaraleret.com/), un groupe de recherche axé sur la conservation du patrimoine biologique et culturel, en collaboration avec les Drs Jordi Bascompte et Patrick R. Roehrdanz. Il est soutenu par des subventions du Fonds national suisse de la recherche scientifique, de la Fondation nationale suisse de la recherche scientifique et du Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative. Ce site web () a été développé par Nisha Marwaha (https://github.com/nmarwaha).</br>
+Le projet The Knowing Forest est développé au laboratoire du Dr Rodrigo Cámara-Leret (https://rcamaraleret.com/), un groupe de recherche axé sur la conservation du patrimoine biologique et culturel, en collaboration avec les Drs Jordi Bascompte et Patrick R. Roehrdanz. Il est soutenu par des subventions du Fonds national suisse de la recherche scientifique, de la Fondation nationale suisse de la recherche scientifique et du Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative. Ce site web () a été développé par Nisha Marwaha (https://github.com/nmarwaha).</br>
 
 <b>Ressources</b>
 
 XX citation d'article</br>
 XX citation de base de données</br>
-GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
+GitHub: https://github.com/nmarwaha/the-knowing-forest</br>
 
 <b>Téléchargements de Données</b>
 
@@ -478,7 +478,7 @@ GitHub: https://github.com/nmarwaha/useful-plants-of-amazonia</br>
 
 - Les données ont été compilées à partir de la littérature ou de travaux de terrain réalisés par nous-mêmes ou nos collaborateurs. Les données ont été incorporées à partir des publications originales, sauf demande contraire des auteurs.
 
-- Useful Plants of Amazonia () n'est ni l'auteur ni le propriétaire des données. Il s'agit simplement d'un moyen de les partager avec la communauté. Si vous décidez d'utiliser cet ensemble de données, vous devez mentionner ce service web: «Ce travail a utilisé la base de données Useful Plants of Amazonia ().» Cela n'empêche pas de citer l'auteur des études individuelles si nécessaire. Toutes les références se trouvent dans le fichier de l'ensemble de données.
+- The Knowing Forest () n'est ni l'auteur ni le propriétaire des données. Il s'agit simplement d'un moyen de les partager avec la communauté. Si vous décidez d'utiliser cet ensemble de données, vous devez mentionner ce service web: «Ce travail a utilisé la base de données The Knowing Forest ().» Cela n'empêche pas de citer l'auteur des études individuelles si nécessaire. Toutes les références se trouvent dans le fichier de l'ensemble de données.
 
 - Utilisez cet ensemble de données à vos propres risques. Nous ne sommes pas responsables de l'exactitude des résultats issus de vos recherches.
 
