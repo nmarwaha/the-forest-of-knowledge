@@ -127,7 +127,7 @@ library(shinyWidgets)
 library(dplyr)
 library(tidyverse)
 
-setwd("~/Documents/GitHub/the-forest-of-knowledge")
+# setwd("~/Documents/GitHub/the-forest-of-knowledge")
 ```
 
 Map
