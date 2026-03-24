@@ -4,6 +4,15 @@ output:
   flexdashboard::flex_dashboard:
     vertical_layout: fill
     theme: default
+    # theme:
+    #   version: 4
+    #   bg: "#ffffff" # background
+    #   fg: "#7F4F24" # text
+    #   primary: "#e6e6e6" # navigation bar, hyperlinks
+    #   secondary: "#7F4F24"
+    #   # base_font: font_google(Libre Baskerville)
+    #   # heading_font: font_google(Libre Baskerville)
+    #   # code_font: font_google(Libre Baskerville)
     source_code: "https://github.com/nmarwaha/the-knowing-forest"
   html_document:
     self_contained: false
@@ -237,6 +246,8 @@ filtered_data <- reactive({
 output$mymap <- renderLeaflet({
   leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     addTiles() %>%
+    # can choose alternate map here, check copyright - https://leaflet-extras.github.io/leaflet-providers/preview/index.html
+    # addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
     setView(lat = initial_lat, lng = initial_lng, zoom = initial_zm) %>%
     setMaxBounds(
       lng1 = min_lng, lat1 = min_lat, # southwest corner
