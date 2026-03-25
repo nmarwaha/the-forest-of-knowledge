@@ -132,8 +132,8 @@ library(tidyverse)
 
 Map
 =====================================
-<!-- Column -->
-<!-- ----------------------------------------------------------------------- -->
+Column
+-----------------------------------------------------------------------
 
 ```{r map data}
 # load database
@@ -150,15 +150,109 @@ max_lat <- max(as.numeric(DB_raw_languages$glotto_lat), na.rm = TRUE) +5 # 7.51,
 min_lat <- min(as.numeric(DB_raw_languages$glotto_lat), na.rm = TRUE) -5 # -16.77
 max_lng <- max(as.numeric(DB_raw_languages$glotto_lon), na.rm = TRUE) +5 # -37.02
 min_lng <- min(as.numeric(DB_raw_languages$glotto_lon), na.rm = TRUE) -5 # -78.34
+```
 
-# map for static view
-DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-  addTiles() %>%
-  addMarkers(lng=as.numeric(DB_raw_languages$glotto_lon), lat=as.numeric(DB_raw_languages$glotto_lat)) %>%
-  setView(lat = initial_lat, lng = initial_lng, zoom = initial_zm) %>%
-  setMaxBounds(
-    lng1 = min_lng, lat1 = min_lat, # southwest corner
-    lng2 = max_lng,  lat2 = max_lat # northeast corner
+```{r interactive map filter UI setup}
+# set up filter boxes
+ui <- fluidPage(
+  fluidRow(
+    column(3, pickerInput("species", "Species",
+                          choices = unique(DB_raw_languages$species_resolved),
+                          selected = unique(DB_raw_languages$species_resolved),
+                          multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
+    column(2, pickerInput("use", "Use",
+                          choices = unique(DB_raw_languages$use_category_resolved),
+                          selected = unique(DB_raw_languages$use_category_resolved),
+                          multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
+    column(2, pickerInput("part", "Plant part",
+                          choices = unique(DB_raw_languages$plant_part_resolved),
+                          selected = unique(DB_raw_languages$plant_part_resolved),
+                          multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
+    column(3, pickerInput("language", "Language",
+                          choices = unique(DB_raw_languages$tribe_language),
+                          selected = unique(DB_raw_languages$tribe_language),
+                          multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE)))
+    # , # LOCKED
+    # column(1, downloadButton("downloadData", "Data"),
+    #        style = "flex: 0; margin-top: 25px;",)
+  ),
+
+# set up map box
+    leafletOutput("mymap", height = "89vh"),
+  
+# set up popup sidebar - LOCKED
+#     tags$div(
+#       id = "popupSidebar_filter",
+#       style = "
+#         position: fixed;
+#         top: 73px; right: 0;
+#         width: 30%;
+#         height: 90.85%;
+#         overflow-y: auto;
+#         background: white;
+#         border-left: 1px solid #ccc;
+#         padding: 15px;
+#         z-index: 1000;
+#         display: none;
+#       ",
+#     tags$div(
+#       style = "
+#         position: sticky;
+#         top: 0;
+#         background: none;
+#         padding: 5px 0;
+#         z-index: 1001;
+#       ",
+#       tags$button(
+#         "×",
+#         style = "
+#           background: white;
+#           border: none;
+#           font-size: 20px;
+#           cursor: pointer;
+#           float: right;
+#           margin-right: 10px;
+#         ",
+#         onclick = "document.getElementById('popupSidebar_filter').style.display='none';"
+#           )
+#         ),
+#       tags$div(id = "popupContent_filter", style = "margin-top: 10px;"),
+# # load sidebar content
+#     tags$script(HTML("
+#       function showSidebarFiltered() {
+#         document.getElementById('popupSidebar_filter').style.display = 'block';
+#       }
+#     "))
+#     )
+)
+```
+
+###
+
+```{r interactive map}
+server <- function(input, output, session) {
+  
+# reactive data filtering
+filtered_data <- reactive({
+  DB_raw_languages %>%
+    filter(
+      species_resolved %in% input$species,
+      use_category_resolved %in% input$use,
+      plant_part_resolved %in% input$part,
+      tribe_language %in% input$language
+    )
+})
+
+# initial map render
+output$mymap <- renderLeaflet({
+  leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+    addTiles() %>%
+    # can choose alternate map here, check copyright - https://leaflet-extras.github.io/leaflet-providers/preview/index.html
+    # addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
+    setView(lat = initial_lat, lng = initial_lng, zoom = initial_zm) %>%
+    setMaxBounds(
+      lng1 = min_lng, lat1 = min_lat, # southwest corner
+      lng2 = max_lng,  lat2 = max_lat # northeast corner
     ) %>%
   addPolygons(data = st_zm(amazonia), color = "#014421", weight = 5, opacity = 0.5, fill = FALSE, smoothFactor = 1) %>%
   addEasyButton(easyButton(
@@ -171,190 +265,73 @@ DBmap <- leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     onClick = JS(sprintf("function(btn, map){ map.setView([%s, %s], %s); }", initial_lat, initial_lng, initial_zm))
     )
   )
+})
 
-DBmap  # Print the map
-```
+# update map markers dynamically
+observe({
+  leafletProxy("mymap", data = filtered_data()) %>%
+    clearMarkers()
+    
+  filtered_data_grouped <- filtered_data() %>%
+    group_by(glotto_lat, glotto_lon) %>%
+    summarise(
+      tribe_lang_grouped = paste0(unique(tribe_language), collapse = "; "),
+      reference_grouped = paste0("- ", unique(reference), collapse = "<br>"))
+  
+  filtered_data_grouped2 <- filtered_data() %>%
+    group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved, use_subcategory_resolved) %>%
+    summarise(
+      plant_part_grouped = paste0(unique(plant_part_resolved), collapse = ", "))
+  
+  filtered_data_grouped3 <- filtered_data_grouped2 %>%
+    group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved) %>%
+    mutate(combo = paste0("<b>Subcategory:</b> ",use_subcategory_resolved,"<br><b>Part:</b> ",plant_part_grouped)) %>%
+    summarise(
+      use_subcategory_grouped = paste0(unique(combo), collapse = "<br>"))
+  
+  filtered_data_grouped4 <- filtered_data_grouped3 %>%
+    group_by(glotto_lat, glotto_lon, species_resolved) %>%
+    mutate(combo = paste0("<b>Use:</b> ",use_category_resolved,"<br>",use_subcategory_grouped)) %>%
+    summarise(
+      use_category_grouped = paste0(unique(combo), collapse = "<br>"))
+  
+  filtered_data_grouped5 <- filtered_data_grouped4 %>%
+    group_by(glotto_lat, glotto_lon) %>%
+    mutate(combo = paste0("<b><i>",species_resolved,"</i></b><br>",use_category_grouped)) %>%
+    summarise(
+      species_grouped = paste0(unique(combo), collapse = "<br><br>"))
+  
+  filtered_data_grouped$popup_content <-
+    paste0(filtered_data_grouped5$species_grouped,"<br><br><b>References</b><br>",filtered_data_grouped$reference_grouped)
 
-```{r interactive map filter UI setup}
-# # set up filter boxes
-# ui <- fluidPage(
-#   fluidRow(
-#     column(3, pickerInput("species", "Species",
-#                           choices = unique(DB_raw_languages$species_resolved),
-#                           selected = unique(DB_raw_languages$species_resolved),
-#                           multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
-#     column(2, pickerInput("use", "Use",
-#                           choices = unique(DB_raw_languages$use_category_resolved),
-#                           selected = unique(DB_raw_languages$use_category_resolved),
-#                           multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
-#     column(2, pickerInput("part", "Plant part",
-#                           choices = unique(DB_raw_languages$plant_part_resolved),
-#                           selected = unique(DB_raw_languages$plant_part_resolved),
-#                           multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
-#     column(3, pickerInput("language", "Language",
-#                           choices = unique(DB_raw_languages$tribe_language),
-#                           selected = unique(DB_raw_languages$tribe_language),
-#                           multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE)))
-#     # , # LOCKED
-#     # column(1, downloadButton("downloadData", "Data"),
-#     #        style = "flex: 0; margin-top: 25px;",)
-#   ),
-# 
-# # set up map box
-#     leafletOutput("mymap", height = "89vh"),
-# 
-# # set up popup sidebar - LOCKED
-# #     tags$div(
-# #       id = "popupSidebar_filter",
-# #       style = "
-# #         position: fixed;
-# #         top: 73px; right: 0;
-# #         width: 30%;
-# #         height: 90.85%;
-# #         overflow-y: auto;
-# #         background: white;
-# #         border-left: 1px solid #ccc;
-# #         padding: 15px;
-# #         z-index: 1000;
-# #         display: none;
-# #       ",
-# #     tags$div(
-# #       style = "
-# #         position: sticky;
-# #         top: 0;
-# #         background: none;
-# #         padding: 5px 0;
-# #         z-index: 1001;
-# #       ",
-# #       tags$button(
-# #         "×",
-# #         style = "
-# #           background: white;
-# #           border: none;
-# #           font-size: 20px;
-# #           cursor: pointer;
-# #           float: right;
-# #           margin-right: 10px;
-# #         ",
-# #         onclick = "document.getElementById('popupSidebar_filter').style.display='none';"
-# #           )
-# #         ),
-# #       tags$div(id = "popupContent_filter", style = "margin-top: 10px;"),
-# # # load sidebar content
-# #     tags$script(HTML("
-# #       function showSidebarFiltered() {
-# #         document.getElementById('popupSidebar_filter').style.display = 'block';
-# #       }
-# #     "))
-# #     )
+  filtered_data_grouped$popup_content <- gsub("'","&#8217;" , filtered_data_grouped$popup_content)
+  filtered_data_grouped$popup_content <- gsub('"',"&#8217;&#8217;" , filtered_data_grouped$popup_content)
+
+  leafletProxy("mymap", data=filtered_data_grouped) %>%
+    addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat)
+               # , # LOCKED
+               # popup = paste0("<b>Language:</b> ",
+               #                ifelse(filtered_data_grouped$tribe_lang_grouped != "",          
+               #                       filtered_data_grouped$tribe_lang_grouped, "N/A"), "<br>",
+               #                "<button onclick=\"showSidebarFiltered(); document.getElementById('popupContent_filter').innerHTML = '",
+               #                filtered_data_grouped$popup_content,
+               #                "'\" style='margin-top:5px; background-color:#007bff; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;'>See more</button>"
+               #                )
+              )  
+})
+
+# dynamic download button - need to ensure accented characters are properly encoded - LOCKED
+# output$downloadData <- downloadHandler(
+#   filename = function() {
+#     paste("the-forest-of-knowledge-database-filtered-", Sys.Date(), ".csv", sep = "")
+#   },
+#   content = function(file) {
+#     write.csv(filtered_data(), file, row.names = FALSE)
+#   }
 # )
-```
+}
 
-<!-- ### -->
-
-```{r interactive map}
-# server <- function(input, output, session) {
-# 
-# # reactive data filtering
-# filtered_data <- reactive({
-#   DB_raw_languages %>%
-#     filter(
-#       species_resolved %in% input$species,
-#       use_category_resolved %in% input$use,
-#       plant_part_resolved %in% input$part,
-#       tribe_language %in% input$language
-#     )
-# })
-# 
-# # initial map render
-# output$mymap <- renderLeaflet({
-#   leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-#     addTiles() %>%
-#     # can choose alternate map here, check copyright - https://leaflet-extras.github.io/leaflet-providers/preview/index.html
-#     # addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
-#     setView(lat = initial_lat, lng = initial_lng, zoom = initial_zm) %>%
-#     setMaxBounds(
-#       lng1 = min_lng, lat1 = min_lat, # southwest corner
-#       lng2 = max_lng,  lat2 = max_lat # northeast corner
-#     ) %>%
-#   addPolygons(data = st_zm(amazonia), color = "#014421", weight = 5, opacity = 0.5, fill = FALSE, smoothFactor = 1) %>%
-#   addEasyButton(easyButton(
-#     icon = "fa-search-plus", title = "Zoom in",
-#     onClick = JS("function(btn, map){ map.zoomIn(); }")
-#     )
-#   ) %>%
-#   addEasyButton(easyButton(
-#     icon="fa-home", title="Reset view",
-#     onClick = JS(sprintf("function(btn, map){ map.setView([%s, %s], %s); }", initial_lat, initial_lng, initial_zm))
-#     )
-#   )
-# })
-# 
-# # update map markers dynamically
-# observe({
-#   leafletProxy("mymap", data = filtered_data()) %>%
-#     clearMarkers()
-# 
-#   filtered_data_grouped <- filtered_data() %>%
-#     group_by(glotto_lat, glotto_lon) %>%
-#     summarise(
-#       tribe_lang_grouped = paste0(unique(tribe_language), collapse = "; "),
-#       reference_grouped = paste0("- ", unique(reference), collapse = "<br>"))
-# 
-#   filtered_data_grouped2 <- filtered_data() %>%
-#     group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved, use_subcategory_resolved) %>%
-#     summarise(
-#       plant_part_grouped = paste0(unique(plant_part_resolved), collapse = ", "))
-# 
-#   filtered_data_grouped3 <- filtered_data_grouped2 %>%
-#     group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved) %>%
-#     mutate(combo = paste0("<b>Subcategory:</b> ",use_subcategory_resolved,"<br><b>Part:</b> ",plant_part_grouped)) %>%
-#     summarise(
-#       use_subcategory_grouped = paste0(unique(combo), collapse = "<br>"))
-# 
-#   filtered_data_grouped4 <- filtered_data_grouped3 %>%
-#     group_by(glotto_lat, glotto_lon, species_resolved) %>%
-#     mutate(combo = paste0("<b>Use:</b> ",use_category_resolved,"<br>",use_subcategory_grouped)) %>%
-#     summarise(
-#       use_category_grouped = paste0(unique(combo), collapse = "<br>"))
-# 
-#   filtered_data_grouped5 <- filtered_data_grouped4 %>%
-#     group_by(glotto_lat, glotto_lon) %>%
-#     mutate(combo = paste0("<b><i>",species_resolved,"</i></b><br>",use_category_grouped)) %>%
-#     summarise(
-#       species_grouped = paste0(unique(combo), collapse = "<br><br>"))
-# 
-#   filtered_data_grouped$popup_content <-
-#     paste0(filtered_data_grouped5$species_grouped,"<br><br><b>References</b><br>",filtered_data_grouped$reference_grouped)
-# 
-#   filtered_data_grouped$popup_content <- gsub("'","&#8217;" , filtered_data_grouped$popup_content)
-#   filtered_data_grouped$popup_content <- gsub('"',"&#8217;&#8217;" , filtered_data_grouped$popup_content)
-# 
-#   leafletProxy("mymap", data=filtered_data_grouped) %>%
-#     addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat)
-#                # , # LOCKED
-#                # popup = paste0("<b>Language:</b> ",
-#                #                ifelse(filtered_data_grouped$tribe_lang_grouped != "",
-#                #                       filtered_data_grouped$tribe_lang_grouped, "N/A"), "<br>",
-#                #                "<button onclick=\"showSidebarFiltered(); document.getElementById('popupContent_filter').innerHTML = '",
-#                #                filtered_data_grouped$popup_content,
-#                #                "'\" style='margin-top:5px; background-color:#007bff; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;'>See more</button>"
-#                #                )
-#               )
-# })
-# 
-# # dynamic download button - need to ensure accented characters are properly encoded - LOCKED
-# # output$downloadData <- downloadHandler(
-# #   filename = function() {
-# #     paste("the-forest-of-knowledge-database-filtered-", Sys.Date(), ".csv", sep = "")
-# #   },
-# #   content = function(file) {
-# #     write.csv(filtered_data(), file, row.names = FALSE)
-# #   }
-# # )
-# }
-# 
-# shinyApp(ui, server)
+shinyApp(ui, server)
 ```
 
 <!-- Home -->
