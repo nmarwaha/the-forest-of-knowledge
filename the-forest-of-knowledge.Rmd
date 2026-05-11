@@ -178,8 +178,8 @@ ui <- fluidPage(
   ),
 
 # set up map box
-    leafletOutput("mymap", height = "100vh"), # previously height = "89vh", does not load on mobile properly
-  
+    leafletOutput("mymap", height = "calc(100dvh - 0px)"), # does not load on mobile properly
+
 # set up popup sidebar - LOCKED
 #     tags$div(
 #       id = "popupSidebar_filter",
@@ -465,7 +465,7 @@ shinyApp(ui, server)
 <!-- - O site <i>“The Forest of Knowledge”</i> não é o autor nem o proprietário dos dados. É apenas uma forma de compartilhá-los com a comunidade.  -->
 
 <!-- - Se você decidir usar este conjunto de dados, deve:  -->
-<!-- 1. Citar o artigo original: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>. -->
+<!-- 1. Citar o artigo original: “Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.” -->
 <!-- 2. Citar este site: “Este trabalho utilizou a base de dados <i>‘The Forest of Knowledge’</i> disponível no site: [www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com).” -->
 
 <!-- - O uso do site <i>“The Forest of Knowledge”</i> não exclui a citação dos autores de estudos individuais quando necessário. Todas as referências estão no arquivo do conjunto de dados. -->
@@ -511,7 +511,7 @@ shinyApp(ui, server)
 <!-- - Les données ont été compilées à partir de la littérature et, lorsque cela était possible, des publications originales. -->
 
 <!-- - Le site <i>“The Forest of Knowledge”</i> n’est pas l’auteur ni le propriétaire des données; il constitue uniquement un moyen de les partager avec la communauté. Si vous utilisez cet ensemble de données, vous devez:  -->
-<!-- 1. Citer l’article original: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>. -->
+<!-- 1. Citer l’article original: “Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.” -->
 <!-- 2. Citer ce site: “Ce travail a utilisé l’ensemble de données <i>‘The Forest of Knowledge’</i>: [www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com).” -->
 
 <!-- - L’utilisation du site <i>“The Forest of Knowledge”</i> n’exclut pas la citation des auteurs des études individuelles lorsque nécessaire. Toutes les références figurent dans le fichier de données. -->
