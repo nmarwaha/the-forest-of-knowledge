@@ -178,7 +178,7 @@ ui <- fluidPage(
   ),
 
 # set up map box
-    leafletOutput("mymap", height = "600px"), # previously height = "89vh", does not load on mobile properly
+    leafletOutput("mymap", height = "100vh"), # previously height = "89vh", does not load on mobile properly
   
 # set up popup sidebar - LOCKED
 #     tags$div(
