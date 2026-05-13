@@ -110,6 +110,40 @@ resource_files:
     color: #ffffff;
     background-color: #014421;
   }
+}
+
+/* === Mobile map fix (outer flexdashboard frame) === */
+/* On mobile, flexdashboard's mobile-layout caps each chart at ~400px height,
+   regardless of viewport. Override so our single chart fills the viewport. */
+@media (max-width: 767px) {
+  #dashboard-container.mobile-layout .section.level1,
+  #dashboard-container.mobile-layout .dashboard-column,
+  #dashboard-container.mobile-layout .chart-wrapper,
+  #dashboard-container.mobile-layout .chart-stage {
+    height: calc(100dvh - 60px) !important;
+    min-height: calc(100dvh - 60px) !important;
+    max-height: none !important;
+  }
+  #dashboard-container.mobile-layout iframe.shiny-frame {
+    height: 100% !important;
+    min-height: calc(100dvh - 80px) !important;
+    width: 100% !important;
+  }
+}
+@supports not (height: 100dvh) {
+  @media (max-width: 767px) {
+    #dashboard-container.mobile-layout .section.level1,
+    #dashboard-container.mobile-layout .dashboard-column,
+    #dashboard-container.mobile-layout .chart-wrapper,
+    #dashboard-container.mobile-layout .chart-stage {
+      height: calc(100vh - 60px) !important;
+      min-height: calc(100vh - 60px) !important;
+    }
+    #dashboard-container.mobile-layout iframe.shiny-frame {
+      min-height: calc(100vh - 80px) !important;
+    }
+  }
+}
 </style>
 
 ```{r setup, include=FALSE}
@@ -155,30 +189,54 @@ min_lng <- min(as.numeric(DB_raw_languages$glotto_lon), na.rm = TRUE) -5 # -78.3
 ```{r interactive map filter UI setup}
 # set up filter boxes
 ui <- fluidPage(
-  fluidRow(
-    column(3, pickerInput("species", "Species",
-                          choices = unique(DB_raw_languages$species_resolved),
-                          selected = unique(DB_raw_languages$species_resolved),
-                          multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
-    column(2, pickerInput("use", "Use",
-                          choices = unique(DB_raw_languages$use_category_resolved),
-                          selected = unique(DB_raw_languages$use_category_resolved),
-                          multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
-    column(2, pickerInput("part", "Plant part",
-                          choices = unique(DB_raw_languages$plant_part_resolved),
-                          selected = unique(DB_raw_languages$plant_part_resolved),
-                          multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
-    column(3, pickerInput("language", "Language",
-                          choices = unique(DB_raw_languages$tribe_language),
-                          selected = unique(DB_raw_languages$tribe_language),
-                          multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE)))
-    # , # LOCKED
-    # column(1, downloadButton("downloadData", "Data"),
-    #        style = "flex: 0; margin-top: 25px;",)
-  ),
+  tags$head(tags$style(HTML("
+    html, body { height: 100%; margin: 0; }
+    .container-fluid { height: 100%; padding: 8px; }
+    .app-shell { display: flex; flex-direction: column; height: 100%; width: 100%; }
+    .filter-row { flex: 0 0 auto; }
+    .map-wrap { flex: 1 1 auto; min-height: 0; width: 100%; position: relative; }
+    .map-wrap > .html-widget,
+    .map-wrap > .leaflet-container,
+    .map-wrap .html-widget-output { height: 100% !important; width: 100% !important; }
+    @media (max-width: 767px) {
+      .filter-row .form-group { margin-bottom: 6px; }
+      .filter-row .col-sm-3,
+      .filter-row .col-sm-2 { width: 100% !important; padding-left: 8px; padding-right: 8px; }
+      .map-wrap { min-height: 55dvh; }
+    }
+    @supports not (height: 100dvh) {
+      .map-wrap { min-height: 55vh; }
+    }
+  "))),
+  tags$div(class = "app-shell",
+    tags$div(class = "filter-row",
+      fluidRow(
+        column(3, pickerInput("species", "Species",
+                              choices = unique(DB_raw_languages$species_resolved),
+                              selected = unique(DB_raw_languages$species_resolved),
+                              multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
+        column(2, pickerInput("use", "Use",
+                              choices = unique(DB_raw_languages$use_category_resolved),
+                              selected = unique(DB_raw_languages$use_category_resolved),
+                              multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
+        column(2, pickerInput("part", "Plant part",
+                              choices = unique(DB_raw_languages$plant_part_resolved),
+                              selected = unique(DB_raw_languages$plant_part_resolved),
+                              multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
+        column(3, pickerInput("language", "Language",
+                              choices = unique(DB_raw_languages$tribe_language),
+                              selected = unique(DB_raw_languages$tribe_language),
+                              multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE)))
+        # , # LOCKED
+        # column(1, downloadButton("downloadData", "Data"),
+        #        style = "flex: 0; margin-top: 25px;",)
+      )
+    ),
 
-# set up map box
-    leafletOutput("mymap", height = "calc(100dvh - 0px)"), # does not load on mobile properly
+# set up map box - flex child that fills remaining space
+    tags$div(class = "map-wrap",
+      leafletOutput("mymap", height = "100%", width = "100%")
+    ),
 
 # set up popup sidebar - LOCKED
 #     tags$div(
@@ -224,6 +282,7 @@ ui <- fluidPage(
 #       }
 #     "))
 #     )
+  ) # /app-shell
 )
 ```
 
@@ -231,7 +290,7 @@ ui <- fluidPage(
 
 ```{r interactive map}
 server <- function(input, output, session) {
-  
+
 # reactive data filtering
 filtered_data <- reactive({
   DB_raw_languages %>%
@@ -271,36 +330,36 @@ output$mymap <- renderLeaflet({
 observe({
   leafletProxy("mymap", data = filtered_data()) %>%
     clearMarkers()
-    
+
   filtered_data_grouped <- filtered_data() %>%
     group_by(glotto_lat, glotto_lon) %>%
     summarise(
       tribe_lang_grouped = paste0(unique(tribe_language), collapse = "; "),
       reference_grouped = paste0("- ", unique(reference), collapse = "<br>"))
-  
+
   filtered_data_grouped2 <- filtered_data() %>%
     group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved, use_subcategory_resolved) %>%
     summarise(
       plant_part_grouped = paste0(unique(plant_part_resolved), collapse = ", "))
-  
+
   filtered_data_grouped3 <- filtered_data_grouped2 %>%
     group_by(glotto_lat, glotto_lon, species_resolved, use_category_resolved) %>%
     mutate(combo = paste0("<b>Subcategory:</b> ",use_subcategory_resolved,"<br><b>Part:</b> ",plant_part_grouped)) %>%
     summarise(
       use_subcategory_grouped = paste0(unique(combo), collapse = "<br>"))
-  
+
   filtered_data_grouped4 <- filtered_data_grouped3 %>%
     group_by(glotto_lat, glotto_lon, species_resolved) %>%
     mutate(combo = paste0("<b>Use:</b> ",use_category_resolved,"<br>",use_subcategory_grouped)) %>%
     summarise(
       use_category_grouped = paste0(unique(combo), collapse = "<br>"))
-  
+
   filtered_data_grouped5 <- filtered_data_grouped4 %>%
     group_by(glotto_lat, glotto_lon) %>%
     mutate(combo = paste0("<b><i>",species_resolved,"</i></b><br>",use_category_grouped)) %>%
     summarise(
       species_grouped = paste0(unique(combo), collapse = "<br><br>"))
-  
+
   filtered_data_grouped$popup_content <-
     paste0(filtered_data_grouped5$species_grouped,"<br><br><b>References</b><br>",filtered_data_grouped$reference_grouped)
 
@@ -311,13 +370,13 @@ observe({
     addMarkers(~as.numeric(glotto_lon), ~as.numeric(glotto_lat)
                # , # LOCKED
                # popup = paste0("<b>Language:</b> ",
-               #                ifelse(filtered_data_grouped$tribe_lang_grouped != "",          
+               #                ifelse(filtered_data_grouped$tribe_lang_grouped != "",
                #                       filtered_data_grouped$tribe_lang_grouped, "N/A"), "<br>",
                #                "<button onclick=\"showSidebarFiltered(); document.getElementById('popupContent_filter').innerHTML = '",
                #                filtered_data_grouped$popup_content,
                #                "'\" style='margin-top:5px; background-color:#007bff; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;'>See more</button>"
                #                )
-              )  
+              )
 })
 
 # dynamic download button - need to ensure accented characters are properly encoded - LOCKED
