@@ -101,6 +101,48 @@ resource_files:
     color: #ffffff;
     background-color: #014421;
   }
+}
+
+/* === Mobile map fix (outer flexdashboard frame, scoped to Map page) ===
+   flexdashboard's mobile-layout caps each chart at ~400px height regardless
+   of viewport. Override so the Map chart fills the viewport. Selectors
+   target the chart-wrapper chain that flexdashboard's JS sizes inline;
+   !important is required to win against those inline styles.
+   Tested against flexdashboard 0.6.x.
+   Scoped to #section-map so the Home page's prose tabset is NOT clipped. */
+@media (max-width: 767px) {
+  #dashboard-container.mobile-layout #section-map.section.level1,
+  #dashboard-container.mobile-layout #section-map .dashboard-column,
+  #dashboard-container.mobile-layout #section-map .chart-wrapper,
+  #dashboard-container.mobile-layout #section-map .chart-shim,
+  #dashboard-container.mobile-layout #section-map .chart-stage {
+    height: calc(100dvh - 60px) !important;
+    min-height: calc(100dvh - 60px) !important;
+    max-height: none !important;
+  }
+  #dashboard-container.mobile-layout #section-map iframe.shiny-frame {
+    height: 100% !important;
+    min-height: calc(100dvh - 80px) !important;
+    width: 100% !important;
+  }
+}
+/* iOS Safari < 15.4 fallback (no dvh support). */
+@supports not (height: 100dvh) {
+  @media (max-width: 767px) {
+    #dashboard-container.mobile-layout #section-map.section.level1,
+    #dashboard-container.mobile-layout #section-map .dashboard-column,
+    #dashboard-container.mobile-layout #section-map .chart-wrapper,
+    #dashboard-container.mobile-layout #section-map .chart-shim,
+    #dashboard-container.mobile-layout #section-map .chart-stage {
+      height: calc(100vh - 60px) !important;
+      min-height: calc(100vh - 60px) !important;
+    }
+    #dashboard-container.mobile-layout #section-map iframe.shiny-frame {
+      min-height: calc(100vh - 80px) !important;
+    }
+  }
+}
+/* Home page (and any future non-Map pages) intentionally NOT overridden. */
 </style>
 
 ```{r setup, include=FALSE}
@@ -146,29 +188,70 @@ min_lng <- min(as.numeric(DB_raw_languages$glotto_lon), na.rm = TRUE) -5 # -78.3
 ```{r interactive map filter UI setup}
 # set up filter boxes
 ui <- fluidPage(
-  fluidRow(
-    column(3, pickerInput("species", "Species",
-                          choices = sort(unique(DB_raw_languages$species_resolved)),
-                          selected = sort(unique(DB_raw_languages$species_resolved)),
-                          multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
-    column(2, pickerInput("use", "Use",
-                          choices = sort(unique(DB_raw_languages$use_category_resolved)),
-                          selected = sort(unique(DB_raw_languages$use_category_resolved)),
-                          multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
-    column(2, pickerInput("part", "Plant part",
-                          choices = sort(unique(DB_raw_languages$plant_part_resolved)),
-                          selected = sort(unique(DB_raw_languages$plant_part_resolved)),
-                          multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
-    column(3, pickerInput("language", "Language",
-                          choices = sort(unique(DB_raw_languages$tribe_language)),
-                          selected = sort(unique(DB_raw_languages$tribe_language)),
-                          multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
-    column(1, downloadButton("downloadData", "Data"),
-           style = "flex: 0; margin-top: 25px;",)
-  ),
 
-# set up map box
-    leafletOutput("mymap", height = "calc(100dvh - 0px)"), # does not load on mobile properly
+  # Iframe-scoped CSS: flexdashboard hosts the Shiny app inside an iframe,
+  # and parent-document CSS does NOT cross that boundary. Inject the flex
+  # layout here so it reaches the elements rendered inside the iframe.
+  tags$head(tags$style(HTML("
+    html, body { height: 100%; margin: 0; }
+    .container-fluid { height: 100%; padding: 8px; }
+    .app-shell { display: flex; flex-direction: column; height: 100%; width: 100%; }
+    .filter-row { flex: 0 0 auto; }
+    .map-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      overscroll-behavior: contain;
+    }
+    .map-wrap > .html-widget,
+    .map-wrap > .leaflet-container,
+    .map-wrap .html-widget-output { height: 100% !important; width: 100% !important; }
+    @media (max-width: 767px) {
+      .filter-row .form-group { margin-bottom: 6px; }
+      .filter-row > .row > [class^='col-'] {
+        width: 100% !important;
+        padding-left: 8px;
+        padding-right: 8px;
+        box-sizing: border-box;
+      }
+      .map-wrap { min-height: 55dvh; }
+    }
+    @supports not (height: 100dvh) {
+      .map-wrap { min-height: 55vh; }
+    }
+  "))),
+
+  tags$div(class = "app-shell",
+    tags$div(class = "filter-row",
+      fluidRow(
+        column(3, pickerInput("species", "Species",
+                              choices = sort(unique(DB_raw_languages$species_resolved)),
+                              selected = sort(unique(DB_raw_languages$species_resolved)),
+                              multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
+        column(2, pickerInput("use", "Use",
+                              choices = sort(unique(DB_raw_languages$use_category_resolved)),
+                              selected = sort(unique(DB_raw_languages$use_category_resolved)),
+                              multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
+        column(2, pickerInput("part", "Plant part",
+                              choices = sort(unique(DB_raw_languages$plant_part_resolved)),
+                              selected = sort(unique(DB_raw_languages$plant_part_resolved)),
+                              multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
+        column(3, pickerInput("language", "Language",
+                              choices = sort(unique(DB_raw_languages$tribe_language)),
+                              selected = sort(unique(DB_raw_languages$tribe_language)),
+                              multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
+        column(1, downloadButton("downloadData", "Data"),
+               style = "flex: 0; margin-top: 25px;",)
+      )
+    ),
+
+# set up map box - flex child that fills remaining space below filters
+    tags$div(class = "map-wrap",
+      leafletOutput("mymap", height = "100%", width = "100%")
+    )
+  ), # /app-shell
 
 # set up popup sidebar
     tags$div(
