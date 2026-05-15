@@ -1,18 +1,9 @@
 ---
-title: "The Forest of Knowledge" # version 1.0.0-alpha.4
+title: "The Forest of Knowledge" # version 1.0.0-alpha.5
 output:
   flexdashboard::flex_dashboard:
     vertical_layout: fill
     theme: default
-    # theme:
-    #   version: 4
-    #   bg: "#ffffff" # background
-    #   fg: "#7F4F24" # text
-    #   primary: "#e6e6e6" # navigation bar, hyperlinks
-    #   secondary: "#7F4F24"
-    #   # base_font: font_google(Libre Baskerville)
-    #   # heading_font: font_google(Libre Baskerville)
-    #   # code_font: font_google(Libre Baskerville)
     source_code: "https://github.com/nmarwaha/the-forest-of-knowledge"
   html_document:
     self_contained: false
@@ -171,7 +162,7 @@ Column
 
 ```{r map data}
 # load database
-DB_raw <- read.csv("Cámara-Leret_The-Forest-of-Knowledge_20260324.csv", encoding = "UTF-8")
+DB_raw <- read.csv("Cámara-Leret_The-Forest-of-Knowledge_20260514.csv", encoding = "UTF-8")
 DB_raw_languages <- DB_raw[!(is.na(DB_raw$glotto_lat) | DB_raw$glotto_lat=="" | is.na(DB_raw$glotto_lon) | DB_raw$glotto_lon==""), ]
 amazonia <- read_sf('Lim_Biogeografico.shp') %>%
   st_transform('+proj=longlat +datum=WGS84')
@@ -212,20 +203,20 @@ ui <- fluidPage(
     tags$div(class = "filter-row",
       fluidRow(
         column(3, pickerInput("species", "Species",
-                              choices = unique(DB_raw_languages$species_resolved),
-                              selected = unique(DB_raw_languages$species_resolved),
+                              choices = sort(unique(DB_raw_languages$species_resolved)),
+                              selected = sort(unique(DB_raw_languages$species_resolved)),
                               multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
         column(2, pickerInput("use", "Use",
-                              choices = unique(DB_raw_languages$use_category_resolved),
-                              selected = unique(DB_raw_languages$use_category_resolved),
+                              choices = sort(unique(DB_raw_languages$use_category_resolved)),
+                              selected = sort(unique(DB_raw_languages$use_category_resolved)),
                               multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
         column(2, pickerInput("part", "Plant part",
-                              choices = unique(DB_raw_languages$plant_part_resolved),
-                              selected = unique(DB_raw_languages$plant_part_resolved),
+                              choices = sort(unique(DB_raw_languages$plant_part_resolved)),
+                              selected = sort(unique(DB_raw_languages$plant_part_resolved)),
                               multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE))),
         column(3, pickerInput("language", "Language",
-                              choices = unique(DB_raw_languages$tribe_language),
-                              selected = unique(DB_raw_languages$tribe_language),
+                              choices = sort(unique(DB_raw_languages$tribe_language)),
+                              selected = sort(unique(DB_raw_languages$tribe_language)),
                               multiple = TRUE, options = list(`actions-box` = TRUE, `live-search` = TRUE)))
         # , # LOCKED
         # column(1, downloadButton("downloadData", "Data"),
@@ -306,8 +297,7 @@ filtered_data <- reactive({
 output$mymap <- renderLeaflet({
   leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
     addTiles() %>%
-    # can choose alternate map here, check copyright - https://leaflet-extras.github.io/leaflet-providers/preview/index.html
-    # addProviderTiles(providers$Esri.WorldGrayCanvas) %>%
+    # addProviderTiles(providers$Esri.WorldGrayCanvas) %>% # can choose alternate map here, check copyright - https://leaflet-extras.github.io/leaflet-providers/preview/index.html
     setView(lat = initial_lat, lng = initial_lng, zoom = initial_zm) %>%
     setMaxBounds(
       lng1 = min_lng, lat1 = min_lat, # southwest corner
