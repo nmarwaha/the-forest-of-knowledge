@@ -420,7 +420,7 @@ Column {.tabset}
 
 The publication was a collaboration between Prof. Rodrigo Cámara-Leret (University of Zurich, Department of Systematic and Evolutionary Botany), Prof. Jordi Bascompte (University of Zurich, Department of Evolutionary Biology and Environmental Studies) and Dr. Patrick R. Roehrdanz (Conservation International). The publication was supported by the Swiss National Science Foundation, the University of Zurich, the National Science Foundation, and the John and Jody Arnhold UC Santa Barbara-Conservation International Climate Solutions Collaborative.
 
-<b><i>“The Forest of Knowledge”</i> website</b> contains bibliographic information compiled by Prof. Rodrigo Cámara-Leret (https://rcamaraleret.com) to understand the benefits that native plants provide to the inhabitants of all countries of the Amazon basin. It comprises 76,390 literature reports of 5,796 native species sourced from 700 references published between the 16th and 21st century. <i>The Forest of Knowledge</i> website is supported by a Swiss National Science Foundation Starting Grant “INDIGENOMICS” (Grant number: 211659) (https://data.snf.ch/grants/grant/211659).
+<b><i>“The Forest of Knowledge”</i> website</b> contains bibliographic information compiled by Prof. Rodrigo Cámara-Leret (https://rcamaraleret.com) to understand the benefits that native plants provide to the inhabitants of all countries of the Amazon basin. The website displays records associated with Indigenous Peoples, including 41,702 literature reports of 4,198 native species sourced from 389 references published between the 16th to 21st century. For the full dataset, containing information on Indigenous and non-Indigenous People, please refer to the Zenodo dataset in the Resources section below. <i>"The Forest of Knowledge"</i> website is supported by a Swiss National Science Foundation Starting Grant “INDIGENOMICS” (Grant number: 211659) (https://data.snf.ch/grants/grant/211659).
 
 <b><i>“The Forest of Knowledge”</i> website version 1.0</b> ([www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com)) was developed by Nisha Marwaha (https://github.com/nmarwaha), a PhD student in the Cámara-Leret lab (https://www.systbot.uzh.ch/de/research/camaraleret-group.html).</br>
 
@@ -436,13 +436,13 @@ GitHub: https://github.com/nmarwaha/the-forest-of-knowledge</br>
 
 - The data have been compiled from the literature and from the original publications whenever possible.
 
-- <i>The Forest of Knowledge</i> website is not the author/owner of the data. It is only a way of sharing them with the community.
+- <i>"The Forest of Knowledge"</i> website is not the author/owner of the data. It is only a way of sharing them with the community.
 
 - If you decide to use this dataset, you must:
 1. Cite the original paper: “Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.”
-2. Cite this website: “This work used ‘The Forest of Knowledge’ dataset available in the website: [www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com).”
+2. Cite this website: “This work used <i>‘The Forest of Knowledge’</i> dataset available in the website: [www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com).”
 
-- Use of <i>The Forest of Knowledge</i> website does not preclude citing the author(s) of individual studies when needed. All references are in the dataset file.
+- Use of <i>"The Forest of Knowledge"</i> website does not preclude citing the author(s) of individual studies when needed. All references are in the dataset file.
 
 - Use this dataset at your own risk. We are not responsible for the accuracy of the results derived from your research.
 
@@ -472,7 +472,7 @@ E-mail: rodrigo.camaraleret@uzh.ch
 
 La publicación fue una colaboración entre el Prof. Rodrigo Cámara-Leret (Universidad de Zúrich, Departamento de Botánica Sistemática y Evolutiva), el Prof. Jordi Bascompte (Universidad de Zúrich, Departamento de Biología Evolutiva y Estudios Ambientales) y el Dr. Patrick R. Roehrdanz (Conservation International). La publicación fue apoyada por el Swiss National Science Foundation, la Universidad de Zúrich, la National Science Foundation y el John and Jody Arnhold UC Santa Barbara–Conservation International Climate Solutions Collaborative.
 
-<b>El sitio web <i>“The Forest of Knowledge”</i></b> contiene información bibliográfica recopilada por el Prof. Rodrigo Cámara-Leret (https://rcamaraleret.com) y tiene el objetivo de comprender los beneficios que las plantas nativas proporcionan a los habitantes de todos los países de la cuenca amazónica. Incluye 76.390 registros bibliográficos de 5.796 especies nativas procedentes de 700 referencias publicadas entre los siglos XVI y XXI. El sitio web <i>“The Forest of Knowledge”</i> está respaldado por una beca Starting Grant del Fondo Nacional Suizo de la Investigación Científica (Swiss National Science Foundation) “INDIGENOMICS” (211659) (https://data.snf.ch/grants/grant/211659).
+<b>El sitio web <i>“The Forest of Knowledge”</i></b> contiene información bibliográfica recopilada por el Prof. Rodrigo Cámara-Leret (https://rcamaraleret.com) y tiene el objetivo de comprender los beneficios que las plantas nativas proporcionan a los habitantes de todos los países de la cuenca amazónica. El sitio web muestra registros relacionados con los pueblos indígenas, incluyendo 41.702 registros bibliográficos de 4.198 especies nativas, procedentes de 389 referencias publicadas entre los siglos XVI y XXI. Para acceder al conjunto de datos completo, que contiene información sobre pueblos indígenas y no indígenas, consulte el enlace de Zenodo en la sección de Recursos. El sitio web <i>“The Forest of Knowledge”</i> está respaldado por una beca Starting Grant del Fondo Nacional Suizo de la Investigación Científica (Swiss National Science Foundation) “INDIGENOMICS” (211659) (https://data.snf.ch/grants/grant/211659).
 
 <b>La versión 1.0 del sitio web <i>“The Forest of Knowledge”</i></b> ([www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com)) fue desarrollada por Nisha Marwaha (https://github.com/nmarwaha), estudiante de doctorado en el laboratorio Cámara-Leret (https://www.systbot.uzh.ch/de/research/camaraleret-group.html).</br>
 
@@ -488,13 +488,13 @@ GitHub: https://github.com/nmarwaha/the-forest-of-knowledge</br>
 
 - Los datos han sido compilados a partir de la literatura y, siempre que ha sido posible, de las publicaciones originales.
 
-- El sitio web <i>The Forest of Knowledge</i> no es el autor/propietario de los datos. Es únicamente un medio para compartirlos con la comunidad.
+- El sitio web <i>"The Forest of Knowledge"</i> no es el autor/propietario de los datos. Es únicamente un medio para compartirlos con la comunidad.
 
 - Si decide utilizar este conjunto de datos, debe:
 1. Citar el artículo original: “Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.”
-2. Citar este sitio web: “Este trabajo utilizó el conjunto de datos ‘The Forest of Knowledge’ disponible en el sitio web: [www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com).”
+2. Citar este sitio web: “Este trabajo utilizó el conjunto de datos <i>‘The Forest of Knowledge’</i> disponible en el sitio web: [www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com).”
 
-- El uso del sitio web <i>The Forest of Knowledge</i> no excluye la citación de los autores de estudios individuales cuando sea necesario. Todas las referencias se encuentran en el archivo del conjunto de datos.
+- El uso del sitio web <i>"The Forest of Knowledge"</i> no excluye la citación de los autores de estudios individuales cuando sea necesario. Todas las referencias se encuentran en el archivo del conjunto de datos.
 
 - Utilice este conjunto de datos bajo su propia responsabilidad. No nos hacemos responsables de la exactitud de los resultados derivados de su investigación.
 
@@ -520,7 +520,7 @@ Correo electrónico: rodrigo.camaraleret@uzh.ch
 
 A publicação foi uma colaboração entre o Prof. Rodrigo Cámara-Leret (Universidade de Zurique, Departamento de Botânica Sistemática e Evolutiva), o Prof. Jordi Bascompte (Universidade de Zurique, Departamento de Biologia Evolutiva e Estudos Ambientais) e o Dr. Patrick R. Roehrdanz (Conservation International). A publicação foi apoiada pela Swiss National Science Foundation, pela Universidade de Zurique, pela National Science Foundation e pelo John and Jody Arnhold UC Santa Barbara–Conservation International Climate Solutions Collaborative.
 
-<b>O site <i>“The Forest of Knowledge”</i></b> contém informação bibliográfica compilada pelo Prof. Rodrigo Cámara-Leret (https://rcamaraleret.com) e tem como objetivo compreender os benefícios que as plantas nativas proporcionam aos habitantes de todos os países da bacia amazônica. Inclui 76.390 registros bibliográficos de 5.796 espécies nativas provenientes de 700 referências publicadas entre os séculos XVI e XXI. O site “The Forest of Knowledge” é apoiado por uma bolsa Starting Grant do Fundo Nacional Suíço de Investigação Científica (Swiss National Science Foundation) “INDIGENOMICS” (211659) (https://data.snf.ch/grants/grant/211659).
+<b>O site <i>“The Forest of Knowledge”</i></b> contém informação bibliográfica compilada pelo Prof. Rodrigo Cámara-Leret (https://rcamaraleret.com) e tem como objetivo compreender os benefícios que as plantas nativas proporcionam aos habitantes de todos os países da bacia amazônica. O site exibe registros associados a povos indígenas, incluindo 41.702 relatos bibliográficos sobre 4.198 espécies nativas, provenientes de 389 referências publicadas entre os séculos XVI e XXI. Para o conjunto de dados completo, contendo informações sobre povos indígenas e não indígenas, consulte o conjunto de dados Zenodo na seção Recursos abaixo. O site <i>“The Forest of Knowledge”</i> é apoiado por uma bolsa Starting Grant do Fundo Nacional Suíço de Investigação Científica (Swiss National Science Foundation) “INDIGENOMICS” (211659) (https://data.snf.ch/grants/grant/211659).
 
 <b>A versão 1.0 do site <i>“The Forest of Knowledge”</i></b> ([www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com)) foi desenvolvida por Nisha Marwaha (https://github.com/nmarwaha), estudante de doutorado no laboratório Cámara-Leret (https://www.systbot.uzh.ch/de/research/camaraleret-group.html).</br>
 
@@ -568,7 +568,7 @@ E-mail: rodrigo.camaraleret@uzh.ch
 
 La publication est le fruit d’une collaboration entre le Prof. Rodrigo Cámara-Leret (Université de Zurich, Département de botanique systématique et évolutive), le Prof. Jordi Bascompte (Université de Zurich, Département de biologie évolutive et d’études environnementales) et le Dr. Patrick R. Roehrdanz (Conservation International). La publication a été soutenue par la Swiss National Science Foundation, l’Université de Zurich, la National Science Foundation et le John and Jody Arnhold UC Santa Barbara–Conservation International Climate Solutions Collaborative.
 
-<b>Le site <i>“The Forest of Knowledge”</i></b> contient des informations bibliographiques compilées par le Prof. Rodrigo Cámara-Leret (https://rcamaraleret.com) et vise à comprendre les bénéfices que les plantes natives apportent aux habitants de tous les pays du bassin amazonien. Il comprend 76 390 références bibliographiques concernant 5 796 espèces natives, issues de 700 publications datant du XVIe au XXIe siècle. Le site “The Forest of Knowledge” est soutenu par une bourse Starting Grant du Fonds national suisse de la recherche scientifique (Swiss National Science Foundation) “INDIGENOMICS” (211659) (https://data.snf.ch/grants/grant/211659).
+<b>Le site <i>“The Forest of Knowledge”</i></b> contient des informations bibliographiques compilées par le Prof. Rodrigo Cámara-Leret (https://rcamaraleret.com) et vise à comprendre les bénéfices que les plantes natives apportent aux habitants de tous les pays du bassin amazonien. Le site web présente des données relatives aux peuples autochtones, notamment 41 702 rapports bibliographiques concernant 4 198 espèces indigènes, tirés de 389 références publiées entre le XVIe et le XXIe siècle. Pour consulter l’ensemble des données, contenant des informations sur les populations indigènes et non indigènes, veuillez vous référer à la base de données Zenodo dans la section Ressources ci-dessous. Le site <i>“The Forest of Knowledge”</i> est soutenu par une bourse Starting Grant du Fonds national suisse de la recherche scientifique (Swiss National Science Foundation) “INDIGENOMICS” (211659) (https://data.snf.ch/grants/grant/211659).
 
 <b>La version 1.0 du site <i>“The Forest of Knowledge”</i></b> ([www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com)) a été développée par Nisha Marwaha (https://github.com/nmarwaha), doctorante au laboratoire Cámara-Leret (https://www.systbot.uzh.ch/de/research/camaraleret-group.html).</br>
 
@@ -584,7 +584,9 @@ GitHub: https://github.com/nmarwaha/the-forest-of-knowledge</br>
 
 - Les données ont été compilées à partir de la littérature et, lorsque cela était possible, des publications originales.
 
-- Le site <i>“The Forest of Knowledge”</i> n’est pas l’auteur ni le propriétaire des données; il constitue uniquement un moyen de les partager avec la communauté. Si vous utilisez cet ensemble de données, vous devez:
+- Le site <i>“The Forest of Knowledge”</i> n’est pas l’auteur ni le propriétaire des données; il constitue uniquement un moyen de les partager avec la communauté.
+
+- Si vous utilisez cet ensemble de données, vous devez:
 1. Citer l’article original: “Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.”
 2. Citer ce site: “Ce travail a utilisé l’ensemble de données <i>‘The Forest of Knowledge’</i>: [www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com).”
 
@@ -605,6 +607,54 @@ Département de Botanique Systématique et Évolutive</br>
 Université de Zurich</br>
 Zollikerstrasse 107, 8008 Zurich, Suisse</br>
 Courriel: rodrigo.camaraleret@uzh.ch
+
+### Deutsch
+<b>Über (`r Sys.Date()`)</b>
+
+<b>Die Website <i>“The Forest of Knowledge”</i></b> wurde erstellt, um die folgende Veröffentlichung zu begleiten:</br>
+<b>Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.</b>
+
+Die Veröffentlichung ist eine Zusammenarbeit zwischen Prof. Rodrigo Cámara-Leret (Universität Zürich, Departement für Systematische und Evolutionäre Botanik), Prof. Jordi Bascompte (Universität Zürich, Departement für Evolutionsbiologie und Umweltwissenschaften) und Dr. Patrick R. Roehrdanz (Conservation International). Die Veröffentlichung wurde unterstützt durch die Swiss National Science Foundation, die Universität Zürich, die National Science Foundation sowie das John and Jody Arnhold UC Santa Barbara–Conservation International Climate Solutions Collaborative.
+
+<b>Die Website <i>“The Forest of Knowledge”</i></b> enthält bibliografische Informationen, die von Prof. Rodrigo Cámara-Leret (https://rcamaraleret.com) zusammengestellt wurden, und hat zum Ziel, die Vorteile zu verstehen, die einheimische Pflanzen den Bewohnern aller Länder des Amazonasbeckens bieten. Die Website zeigt Datensätze zu indigenen Völkern an, darunter 41.702 Literaturberichte zu 4.198 einheimischen Arten aus 389 Quellen, die zwischen dem 16. und 21. Jahrhundert veröffentlicht wurden. Den vollständigen Datensatz, mit Informationen zu indigenen und nicht-indigenen Bevölkerungsgruppen, finden Sie im Zenodo-Datensatz im Abschnitt Ressourcen weiter unten.. Die Website <i>“The Forest of Knowledge”</i> wird durch ein Starting Grant des Schweizerischen Nationalfonds zur Förderung der wissenschaftlichen Forschung (Swiss National Science Foundation) “INDIGENOMICS” (211659) (https://data.snf.ch/grants/grant/211659) unterstützt.
+
+<b>Version 1.0 der Website <i>“The Forest of Knowledge”</i></b> ([www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com)) wurde von Nisha Marwaha (https://github.com/nmarwaha), Doktorandin in der Arbeitsgruppe Cámara-Leret (https://www.systbot.uzh.ch/de/research/camaraleret-group.html).</br>
+
+<b>Ressourcen</b>
+
+Originalartikel: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.</br>
+Zenodo: https://doi.org/10.5281/zenodo.19202485</br>
+GitHub: https://github.com/nmarwaha/the-forest-of-knowledge</br>
+
+<b>Daten-Download</b>
+
+- Sie können diesen Datensatz frei nutzen und mit Ihren Mitarbeitenden teilen.
+
+- Die Daten wurden aus der Literatur und, wenn möglich, aus den Originalpublikationen zusammengestellt.
+
+- Die Website <i>“The Forest of Knowledge”</i> ist nicht der r Autor/Eigentümer der Daten. Sie dient lediglich dazu, diese der Gemeinschaft zugänglich zu machen.
+
+- Wenn Sie diesen Datensatz verwenden, müssen Sie:
+1. den Originalartikel zitieren: “Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.”
+2. diese Website zitieren: “Diese Arbeit nutzte den Datensatz <i>‘The Forest of Knowledge’</i>, verfügbar auf der Website: [www.the-forest-of-knowledge.com](https://www.the-forest-of-knowledge.com).”
+
+- Die Nutzung der Website <i>“The Forest of Knowledge”</i> schließt die Zitierung der Autor:innen einzelner Studien, wenn erforderlich, nicht aus. Alle Referenzen sind in der Datendatei enthalten.
+
+- Die Nutzung Nutzung dieses Datensatzes erfolgt auf eigenes Risiko. Wir übernehmen keine Verantwortung für die Genauigkeit der aus Ihrer Forschung abgeleiteten Ergebnisse.
+
+- Wenn Sie Probleme beim Herunterladen der Daten haben, lassen Sie es uns bitte wissen.
+
+<b>Wie Sie beitragen können</b>
+
+- Wenn Sie eine Studie haben, die Ihrer Meinung nach in die Datenbank aufgenommen werden sollte, senden Sie uns bitte eine E-Mail. Wir freuen uns auch über Hinweise auf mögliche Fehler oder sonstiges Feedback.</br>
+
+<b>Kontaktinformationen</b>
+
+Prof. Rodrigo Cámara-Leret</br>
+Institut für Systematische und Evolutionäre Botanik</br>
+Universität Zürich</br>
+Zollikerstrasse 107, 8008 Zürich, Schweiz</br>
+E-mail: rodrigo.camaraleret@uzh.ch
 
 ```{r}
 
