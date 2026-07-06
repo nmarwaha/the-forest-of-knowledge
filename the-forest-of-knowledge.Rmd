@@ -426,7 +426,7 @@ The publication was a collaboration between Prof. Rodrigo Cámara-Leret (Univers
 
 <b>Resources</b>
 
-Original paper: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.</br>
+Original paper: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>. https://www.nature.com/articles/s41586-026-10741-y</br>
 Zenodo: https://doi.org/10.5281/zenodo.19202485</br>
 GitHub: https://github.com/nmarwaha/the-forest-of-knowledge</br>
 
@@ -478,7 +478,7 @@ La publicación fue una colaboración entre el Prof. Rodrigo Cámara-Leret (Univ
 
 <b>Recursos</b>
 
-Artículo original: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.</br>
+Artículo original: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>. https://www.nature.com/articles/s41586-026-10741-y</br>
 Zenodo: https://doi.org/10.5281/zenodo.19202485</br>
 GitHub: https://github.com/nmarwaha/the-forest-of-knowledge</br>
 
@@ -526,7 +526,7 @@ A publicação foi uma colaboração entre o Prof. Rodrigo Cámara-Leret (Univer
 
 <b>Recursos</b>
 
-Artigo original: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.</br>
+Artigo original: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>. https://www.nature.com/articles/s41586-026-10741-y</br>
 Zenodo: https://doi.org/10.5281/zenodo.19202485</br>
 GitHub: https://github.com/nmarwaha/the-forest-of-knowledge</br>
 
@@ -574,7 +574,7 @@ La publication est le fruit d’une collaboration entre le Prof. Rodrigo Cámara
 
 <b>Ressources</b>
 
-Article original: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.</br>
+Article original: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>. https://www.nature.com/articles/s41586-026-10741-y</br>
 Zenodo: https://doi.org/10.5281/zenodo.19202485</br>
 GitHub: https://github.com/nmarwaha/the-forest-of-knowledge</br>
 
@@ -622,7 +622,7 @@ Die Veröffentlichung ist eine Zusammenarbeit zwischen Prof. Rodrigo Cámara-Ler
 
 <b>Ressourcen</b>
 
-Originalartikel: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>.</br>
+Originalartikel: Cámara-Leret, R., Roehrdanz, P. & Bascompte, J (2026) The forest of knowledge under global change. <i>Nature</i>. https://www.nature.com/articles/s41586-026-10741-y</br>
 Zenodo: https://doi.org/10.5281/zenodo.19202485</br>
 GitHub: https://github.com/nmarwaha/the-forest-of-knowledge</br>
 
